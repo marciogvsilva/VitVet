@@ -1,4 +1,4 @@
-package br.com.vitvet.VitVet;
+package br.com.vitvet;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
