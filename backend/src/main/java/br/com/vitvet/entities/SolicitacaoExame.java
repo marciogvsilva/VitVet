@@ -1,5 +1,6 @@
 package br.com.vitvet.entities;
 
+import br.com.vitvet.entities.enums.StatusSolicitacao;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -132,9 +133,3 @@ public class SolicitacaoExame {
     }
 }
 
-enum StatusSolicitacao {
-    RECEBIDO,
-    EM_ANALISE,
-    CONCLUIDO,
-    CANCELADO
-}
