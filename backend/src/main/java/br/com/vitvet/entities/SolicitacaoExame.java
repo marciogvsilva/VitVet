@@ -20,14 +20,11 @@ public class SolicitacaoExame {
     private String protocolo;
 
     @Column(nullable = false)
-    private String suspeitaClinica;
+    private String suspeitaClinica; // UC02 [cite: 366]
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusSolicitacao status;
-
-    @Column
-    private String urlResultadoPdf;
+    private StatusSolicitacao status; // RF06
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
@@ -41,16 +38,12 @@ public class SolicitacaoExame {
     @JoinColumn(name = "veterinario_id", nullable = false)
     private Usuario veterinarioSolicitante;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "patologista_id")
-    private Usuario patologistaResponsavel;
-
     @ManyToMany
-    @JoinTable(
-            name = "solicitacao_tipo_exame",
-            joinColumns = @JoinColumn(name = "solicitacao_id"),
-            inverseJoinColumns = @JoinColumn(name = "tipo_exame_id"))
+    @JoinTable(name = "solicitacao_tipo_exame")
     private List<TipoExame> exames;
+
+    @OneToOne(mappedBy = "solicitacao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ResultadoExame resultado;
 
     public Long getId() {
         return id;
@@ -84,14 +77,6 @@ public class SolicitacaoExame {
         this.status = status;
     }
 
-    public String getUrlResultadoPdf() {
-        return urlResultadoPdf;
-    }
-
-    public void setUrlResultadoPdf(String urlResultadoPdf) {
-        this.urlResultadoPdf = urlResultadoPdf;
-    }
-
     public LocalDateTime getDataSolicitacao() {
         return dataSolicitacao;
     }
@@ -114,14 +99,6 @@ public class SolicitacaoExame {
 
     public void setVeterinarioSolicitante(Usuario veterinarioSolicitante) {
         this.veterinarioSolicitante = veterinarioSolicitante;
-    }
-
-    public Usuario getPatologistaResponsavel() {
-        return patologistaResponsavel;
-    }
-
-    public void setPatologistaResponsavel(Usuario patologistaResponsavel) {
-        this.patologistaResponsavel = patologistaResponsavel;
     }
 
     public List<TipoExame> getExames() {

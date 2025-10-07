@@ -1,10 +1,12 @@
 package br.com.vitvet.entities;
 
+import br.com.vitvet.entities.enums.Papel;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "usuarios")
@@ -90,7 +92,7 @@ public class Usuario {
         this.especialidade = especialidade;
     }
 
-    public Papel getPapel() {
+    public GrantedAuthority getPapel() {
         return papel;
     }
 
@@ -113,9 +115,4 @@ public class Usuario {
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
     }
-}
-
-enum Papel {
-    VETERINARIO,
-    PATOLOGISTA
 }
