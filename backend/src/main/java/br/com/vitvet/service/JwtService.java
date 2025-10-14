@@ -1,6 +1,7 @@
 package br.com.vitvet.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -21,12 +22,10 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    // Extrai o email (username) do token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // Gera um token para o usuário
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
@@ -41,10 +40,13 @@ public class JwtService {
                 .compact();
     }
 
-    // Valida se o token pertence ao usuário e não expirou
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        try {
+            final String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {
@@ -67,8 +69,6 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
-
 
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);

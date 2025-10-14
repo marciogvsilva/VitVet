@@ -1,6 +1,6 @@
 package br.com.vitvet.service;
 
-import br.com.vitvet.entities.Usuario;
+import br.com.vitvet.model.Usuario;
 import br.com.vitvet.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;

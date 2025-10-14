@@ -1,6 +1,6 @@
 package br.com.vitvet.controller;
 
-import br.com.vitvet.entities.Usuario;
+import br.com.vitvet.model.Usuario;
 import br.com.vitvet.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

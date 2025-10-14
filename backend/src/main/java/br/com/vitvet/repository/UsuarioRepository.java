@@ -1,6 +1,6 @@
 package br.com.vitvet.repository;
 
-import br.com.vitvet.entities.Usuario;
+import br.com.vitvet.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

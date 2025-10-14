@@ -1,4 +1,4 @@
-package br.com.vitvet.entities.enums;
+package br.com.vitvet.model.enums;
 
 import org.springframework.security.core.GrantedAuthority;
 

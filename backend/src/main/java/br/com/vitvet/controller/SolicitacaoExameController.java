@@ -1,6 +1,6 @@
 package br.com.vitvet.controller;
 
-import br.com.vitvet.entities.SolicitacaoExame;
+import br.com.vitvet.model.SolicitacaoExame;
 import br.com.vitvet.service.SolicitacaoExameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

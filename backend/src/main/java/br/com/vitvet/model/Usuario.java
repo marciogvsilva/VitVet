@@ -1,6 +1,6 @@
-package br.com.vitvet.entities;
+package br.com.vitvet.model;
 
-import br.com.vitvet.entities.enums.Papel;
+import br.com.vitvet.model.enums.Papel;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,9 +28,6 @@ public class Usuario {
 
     @Column(nullable = false, unique = true)
     private String crmv;
-
-    @Column
-    private String especialidade;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -82,14 +79,6 @@ public class Usuario {
 
     public void setCrmv(String crmv) {
         this.crmv = crmv;
-    }
-
-    public String getEspecialidade() {
-        return especialidade;
-    }
-
-    public void setEspecialidade(String especialidade) {
-        this.especialidade = especialidade;
     }
 
     public GrantedAuthority getPapel() {

@@ -1,4 +1,4 @@
-package br.com.vitvet.entities;
+package br.com.vitvet.model;
 
 import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;

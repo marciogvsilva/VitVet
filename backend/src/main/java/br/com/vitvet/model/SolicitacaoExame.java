@@ -1,6 +1,6 @@
-package br.com.vitvet.entities;
+package br.com.vitvet.model;
 
-import br.com.vitvet.entities.enums.StatusSolicitacao;
+import br.com.vitvet.model.enums.StatusSolicitacao;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,11 +20,11 @@ public class SolicitacaoExame {
     private String protocolo;
 
     @Column(nullable = false)
-    private String suspeitaClinica; // UC02 [cite: 366]
+    private String suspeitaClinica;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusSolicitacao status; // RF06
+    private StatusSolicitacao status;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
