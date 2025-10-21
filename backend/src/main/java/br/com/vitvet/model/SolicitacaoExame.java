@@ -6,10 +6,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "solicitacoes_exames")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
 public class SolicitacaoExame {
 
     @Id
@@ -38,75 +42,15 @@ public class SolicitacaoExame {
     @JoinColumn(name = "veterinario_id", nullable = false)
     private Usuario veterinarioSolicitante;
 
-    @ManyToMany
-    @JoinTable(name = "solicitacao_tipo_exame")
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "solicitacao_tipo_exame",
+            joinColumns = @JoinColumn(name = "solicitacao_id"),
+            inverseJoinColumns = @JoinColumn(name = "tipo_exame_id")
+    )
     private List<TipoExame> exames;
 
     @OneToOne(mappedBy = "solicitacao", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ResultadoExame resultado;
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getProtocolo() {
-        return protocolo;
-    }
-
-    public void setProtocolo(String protocolo) {
-        this.protocolo = protocolo;
-    }
-
-    public String getSuspeitaClinica() {
-        return suspeitaClinica;
-    }
-
-    public void setSuspeitaClinica(String suspeitaClinica) {
-        this.suspeitaClinica = suspeitaClinica;
-    }
-
-    public StatusSolicitacao getStatus() {
-        return status;
-    }
-
-    public void setStatus(StatusSolicitacao status) {
-        this.status = status;
-    }
-
-    public LocalDateTime getDataSolicitacao() {
-        return dataSolicitacao;
-    }
-
-    public void setDataSolicitacao(LocalDateTime dataSolicitacao) {
-        this.dataSolicitacao = dataSolicitacao;
-    }
-
-    public Animal getAnimal() {
-        return animal;
-    }
-
-    public void setAnimal(Animal animal) {
-        this.animal = animal;
-    }
-
-    public Usuario getVeterinarioSolicitante() {
-        return veterinarioSolicitante;
-    }
-
-    public void setVeterinarioSolicitante(Usuario veterinarioSolicitante) {
-        this.veterinarioSolicitante = veterinarioSolicitante;
-    }
-
-    public List<TipoExame> getExames() {
-        return exames;
-    }
-
-    public void setExames(List<TipoExame> exames) {
-        this.exames = exames;
-    }
 }
-

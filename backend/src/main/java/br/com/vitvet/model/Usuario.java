@@ -1,16 +1,24 @@
 package br.com.vitvet.model;
 
 import br.com.vitvet.model.enums.Papel;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.GrantedAuthority;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "usuarios")
 @EntityListeners(AuditingEntityListener.class)
+@Getter
+@Setter
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id")
 public class Usuario {
 
     @Id
@@ -29,6 +37,9 @@ public class Usuario {
     @Column(nullable = false, unique = true)
     private String crmv;
 
+    @Column
+    private String especialidade;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Papel papel;
@@ -40,68 +51,4 @@ public class Usuario {
     @LastModifiedDate
     @Column
     private LocalDateTime dataAtualizacao;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-
-    public String getCrmv() {
-        return crmv;
-    }
-
-    public void setCrmv(String crmv) {
-        this.crmv = crmv;
-    }
-
-    public GrantedAuthority getPapel() {
-        return papel;
-    }
-
-    public void setPapel(Papel papel) {
-        this.papel = papel;
-    }
-
-    public LocalDateTime getDataCriacao() {
-        return dataCriacao;
-    }
-
-    public void setDataCriacao(LocalDateTime dataCriacao) {
-        this.dataCriacao = dataCriacao;
-    }
-
-    public LocalDateTime getDataAtualizacao() {
-        return dataAtualizacao;
-    }
-
-    public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
-        this.dataAtualizacao = dataAtualizacao;
-    }
 }
