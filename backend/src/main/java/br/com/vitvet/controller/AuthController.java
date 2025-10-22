@@ -4,6 +4,7 @@ import br.com.vitvet.dto.JwtResponse;
 import br.com.vitvet.dto.LoginRequest;
 import br.com.vitvet.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@Profile("!dev")
 public class AuthController {
 
     @Autowired
