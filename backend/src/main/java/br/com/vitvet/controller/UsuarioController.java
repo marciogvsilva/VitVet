@@ -1,5 +1,6 @@
 package br.com.vitvet.controller;
 
+import br.com.vitvet.config.anotation.LogDeAuditoria;
 import br.com.vitvet.model.Usuario;
 import br.com.vitvet.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @PostMapping("/cadastro")
+    @LogDeAuditoria(acao = "CADASTRO DE NOVO USUARIO")
     public ResponseEntity<Usuario> cadastrar(@RequestBody Usuario novoUsuario) {
         try {
             Usuario usuarioSalvo = usuarioService.cadastrarUsuario(novoUsuario);

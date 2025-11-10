@@ -1,4 +1,4 @@
-package br.com.vitvet.config;
+package br.com.vitvet.config.documentation;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -14,7 +14,7 @@ import org.springframework.web.method.HandlerMethod;
 import java.util.List;
 
 @SecurityScheme(
-        name = "bearerAuth", // Um nome para o esquema de segurança
+        name = "bearerAuth",
         type = SecuritySchemeType.HTTP,
         scheme = "bearer",
         bearerFormat = "JWT"

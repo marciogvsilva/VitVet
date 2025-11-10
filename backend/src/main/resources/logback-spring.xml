@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- Inclui as configurações padrão do Spring Boot (como o padrão de cores da consola) -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- 1. Variável que define onde guardar os logs -->
+    <property name="LOG_PATH" value="logs" />
+
+    <!-- 2. APONTADOR PARA A CONSOLA (Terminal) -->
+    <!-- Define como os logs devem aparecer no seu terminal -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- 3. APONTADOR PARA O FICHEIRO DE LOG GERAL (app.log) -->
+    <!-- Define um ficheiro que guarda TODOS os logs da aplicação -->
+    <appender name="FILE_APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/app.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Roda o ficheiro de log diariamente -->
+            <fileNamePattern>${LOG_PATH}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Guarda no máximo 30 dias de logs gerais -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 4. APONTADOR PARA O FICHEIRO DE LOG DE AUDITORIA (audit.log) -->
+    <!-- Define um ficheiro que guarda APENAS os logs de auditoria -->
+    <appender name="FILE_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/audit.log</file>
+        <encoder>
+            <!-- Usamos um padrão mais limpo apenas com a data e a mensagem -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/audit.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Guarda 90 dias de logs de auditoria -->
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
+    <!-- 5. CONFIGURAÇÃO DOS LOGGERS -->
+
+    <!-- Logger Específico para a nossa classe de Auditoria -->
+    <!-- O nome (name) DEVE ser o caminho exato da sua classe AuditoriaAspect -->
+    <logger name="br.com.vitvet.config.aop.AuditoriaAspect" level="INFO" additivity="false">
+        <!-- Envia os logs de auditoria para o ficheiro AUDIT e para a CONSOLA -->
+        <appender-ref ref="FILE_AUDIT" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Logger Raiz (Root) -->
+    <!-- Pega todos os outros logs da aplicação (Spring, Hibernate, etc.) -->
+    <root level="INFO">
+        <!-- Envia os logs gerais para o ficheiro APP e para a CONSOLA -->
+        <appender-ref ref="FILE_APP" />
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

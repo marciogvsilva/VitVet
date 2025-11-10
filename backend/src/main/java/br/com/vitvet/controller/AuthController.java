@@ -1,5 +1,6 @@
 package br.com.vitvet.controller;
 
+import br.com.vitvet.config.anotation.LogDeAuditoria;
 import br.com.vitvet.dto.JwtResponse;
 import br.com.vitvet.dto.LoginRequest;
 import br.com.vitvet.service.JwtService;
@@ -24,6 +25,7 @@ public class AuthController {
     private JwtService jwtService;
 
     @PostMapping("/login")
+    @LogDeAuditoria(acao = "TENTATIVA DE LOGIN")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.senha())
