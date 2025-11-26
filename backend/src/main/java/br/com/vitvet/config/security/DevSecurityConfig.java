@@ -1,4 +1,4 @@
-package br.com.vitvet.config;
+package br.com.vitvet.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

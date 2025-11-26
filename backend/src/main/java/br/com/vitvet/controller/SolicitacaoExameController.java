@@ -1,8 +1,10 @@
 package br.com.vitvet.controller;
 
 import br.com.vitvet.config.anotation.LogDeAuditoria;
+import br.com.vitvet.model.ResultadoExame;
 import br.com.vitvet.model.SolicitacaoExame;
 import br.com.vitvet.model.enums.StatusSolicitacao;
+import br.com.vitvet.service.ResultadoExameService;
 import br.com.vitvet.service.SolicitacaoExameService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,6 +22,9 @@ public class SolicitacaoExameController {
 
     @Autowired
     private SolicitacaoExameService solicitacaoService;
+
+    @Autowired
+    private ResultadoExameService resultadoService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('VETERINARIO')")
@@ -33,6 +39,7 @@ public class SolicitacaoExameController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('VETERINARIO') or hasAuthority('PATOLOGISTA')")
     @LogDeAuditoria(acao = "LISTAGEM DE SOLICITACOES")
     public ResponseEntity<List<SolicitacaoExame>> listarTodas() {
         List<SolicitacaoExame> solicitacoes = solicitacaoService.listarTodas();
@@ -51,5 +58,28 @@ public class SolicitacaoExameController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PostMapping(value = "/{id}/resultado", consumes = {"multipart/form-data"})
+    @PreAuthorize("hasAuthority('PATOLOGISTA')")
+    @LogDeAuditoria(acao = "UPLOAD DE RESULTADO")
+    public ResponseEntity<ResultadoExame> enviarResultado(
+            @PathVariable Long id,
+            @RequestParam("observacoes") String observacoes,
+            @RequestParam("arquivo") MultipartFile arquivo) {
+
+        ResultadoExame resultado = resultadoService.adicionarLaudo(id, observacoes, arquivo);
+        return ResponseEntity.ok(resultado);
+    }
+
+    @GetMapping(value = "/listar")
+    @PreAuthorize("hasAuthority('VETERINARIO') or hasAuthority('PATOLOGISTA')")
+    @LogDeAuditoria(acao = "LISTAGEM DE SOLICITACOES")
+    public ResponseEntity<List<SolicitacaoExame>> listar(
+            @RequestParam(required = false) StatusSolicitacao status,
+            @RequestParam(required = false) String animal) {
+
+        List<SolicitacaoExame> solicitacoes = solicitacaoService.listar(status, animal);
+        return ResponseEntity.ok(solicitacoes);
     }
 }

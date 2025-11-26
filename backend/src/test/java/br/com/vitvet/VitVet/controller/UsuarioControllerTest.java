@@ -1,6 +1,6 @@
 package br.com.vitvet.VitVet.controller;
 
-import br.com.vitvet.config.SecurityConfig; // Importar
+import br.com.vitvet.config.security.SecurityConfig; // Importar
 import br.com.vitvet.controller.UsuarioController;
 import br.com.vitvet.model.enums.Papel;
 import br.com.vitvet.model.Usuario;

@@ -73,4 +73,16 @@ public class SolicitacaoExameService {
     public List<SolicitacaoExame> listarTodas() {
         return solicitacaoRepository.findAll();
     }
+
+    public List<SolicitacaoExame> listar(StatusSolicitacao status, String nomeAnimal) {
+        if (status != null && nomeAnimal != null) {
+            return solicitacaoRepository.findByStatusAndAnimalNomeContainingIgnoreCase(status, nomeAnimal);
+        } else if (status != null) {
+            return solicitacaoRepository.findByStatus(status);
+        } else if (nomeAnimal != null) {
+            return solicitacaoRepository.findByAnimalNomeContainingIgnoreCase(nomeAnimal);
+        } else {
+            return solicitacaoRepository.findAll();
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package br.com.vitvet.VitVet.controller;
 
-import br.com.vitvet.config.SecurityConfig;
-import br.com.vitvet.config.filter.JwtAuthFilter; // Importar o filtro
+import br.com.vitvet.config.security.SecurityConfig;
+import br.com.vitvet.config.filter.JwtAuthFilter;
 import br.com.vitvet.controller.SolicitacaoExameController;
 import br.com.vitvet.model.SolicitacaoExame;
 import br.com.vitvet.service.JwtService;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBean; // Importação correta
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -40,16 +40,16 @@ class SolicitacaoExameControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockBean // Use @MockBean para testes de integração web
     private SolicitacaoExameService solicitacaoService;
 
-    @MockBean
+    @MockBean // Use @MockBean
     private JwtService jwtService;
 
-    @MockBean
+    @MockBean // Use @MockBean
     private UserDetailsService userDetailsService;
 
-    @MockBean
+    @MockBean // Use @MockBean
     private JwtAuthFilter jwtAuthFilter;
 
 
@@ -65,7 +65,7 @@ class SolicitacaoExameControllerTest {
         mockMvc.perform(post("/api/solicitacoes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new SolicitacaoExame())))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated()) // Correção: espera 201 Created
                 .andExpect(jsonPath("$.protocolo", is("ABC-123")));
     }
 
@@ -77,10 +77,11 @@ class SolicitacaoExameControllerTest {
         solicitacao.setProtocolo("ABC-123");
         List<SolicitacaoExame> listaSolicitacoes = Collections.singletonList(solicitacao);
 
-        when(solicitacaoService.listarTodas()).thenReturn(listaSolicitacoes);
+        // Correção: o método listar agora aceita filtros (null, null para listar todos)
+        when(solicitacaoService.listar(null, null)).thenReturn(listaSolicitacoes);
 
         mockMvc.perform(get("/api/solicitacoes"))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].protocolo", is("ABC-123")));
     }

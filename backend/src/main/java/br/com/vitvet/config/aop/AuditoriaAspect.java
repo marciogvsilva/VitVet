@@ -21,14 +21,14 @@ public class AuditoriaAspect {
 
     private static final Logger logger = LoggerFactory.getLogger(AuditoriaAspect.class);
 
-    @Around("@annotation(br.com.vitvet.config.anotacao.LogDeAuditoria)")
+    @Around("@annotation(br.com.vitvet.config.anotation.LogDeAuditoria)")
     public Object auditarMetodo(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        String nomeUtilizador = "SISTEMA"; // Padrão
+        String nomeUtilizador = "SISTEMA";
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            nomeUtilizador = authentication.getName(); // Email do utilizador logado
+            nomeUtilizador = authentication.getName();
         }
 
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

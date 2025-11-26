@@ -1,6 +1,6 @@
 package br.com.vitvet.VitVet.controller;
 
-import br.com.vitvet.config.SecurityConfig;
+import br.com.vitvet.config.security.SecurityConfig;
 import br.com.vitvet.controller.AuthController;
 import br.com.vitvet.dto.LoginRequest;
 import br.com.vitvet.service.JwtService;

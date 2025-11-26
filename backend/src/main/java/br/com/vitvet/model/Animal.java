@@ -3,6 +3,7 @@ package br.com.vitvet.model;
 import br.com.vitvet.model.enums.Sexo;
 import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,12 +22,14 @@ public class Animal {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O nome do animal é obrigatório")
     @Column(nullable = false)
     private String nome;
 
     @Column
     private String rgAnimal;
 
+    @NotBlank(message = "A espécie é obrigatória")
     @Column(nullable = false)
     private String especie;
 
@@ -38,6 +41,7 @@ public class Animal {
 
     private LocalDate dataNascimento;
 
+    @NotNull(message = "O tutor é obrigatório")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tutor_id", nullable = false)
     @JsonIgnoreProperties("animais")
