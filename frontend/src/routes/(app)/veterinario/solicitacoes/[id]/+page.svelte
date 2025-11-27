@@ -1,297 +1,532 @@
 <script>
+import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
 import { page } from '$app/stores';
+import { solicitacaoService } from '$lib/mocks/services';
+import StatusBadge from '$lib/components/StatusBadge.svelte';
+import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+import FaExclamationTriangle from 'svelte-icons/fa/FaExclamationTriangle.svelte';
+import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
+import FaPaw from 'svelte-icons/fa/FaPaw.svelte';
+import FaUser from 'svelte-icons/fa/FaUser.svelte';
+import FaMicroscope from 'svelte-icons/fa/FaMicroscope.svelte';
+import FaStethoscope from 'svelte-icons/fa/FaStethoscope.svelte';
+import FaCheckCircle from 'svelte-icons/fa/FaCheckCircle.svelte';
+import FaFilePdf from 'svelte-icons/fa/FaFilePdf.svelte';
+import FaClock from 'svelte-icons/fa/FaClock.svelte';
+import FaInbox from 'svelte-icons/fa/FaInbox.svelte';
 
-// Dados mockados para simular a solicitação selecionada
-const solicitacaoMap = {
-  '01': {
-    id: '01',
-    paciente: 'Paçoca',
-    especie: 'Canino',
-    tutor: 'Roberta',
-    contato: '(XX) XXXXX-XXXX',
-    endereco: 'Rua Inexistente, 40',
-    bairro: 'Nenhum',
-    cidade: 'Irreal',
-    cep: 'XXXXX-XXX',
-    exames: [
-      { nome: 'Hemograma completo', checked: true },
-      { nome: 'Urina', checked: true },
-      { nome: 'Fezes', checked: true }
-    ],
-    status: 'concluido'
-  },
-  '02': {
-    id: '02',
-    paciente: 'Mia',
-    especie: 'Felino',
-    tutor: 'Priscilla',
-    contato: '(XX) XXXXX-XXXX',
-    endereco: 'Rua Dos Exemplos, 22',
-    bairro: 'Centro',
-    cidade: 'Modelópolis',
-    cep: 'XXXXX-XXX',
-    exames: [
-      { nome: 'Ultrassonografia', checked: true }
-    ],
-    status: 'pendente'
-  },
-  '03': {
-    id: '03',
-    paciente: 'Thor',
-    especie: 'Canino',
-    tutor: 'Thiago',
-    contato: '(XX) XXXXX-XXXX',
-    endereco: 'Avenida Principal, 302',
-    bairro: 'Vila Nova',
-    cidade: 'Irreal',
-    cep: 'XXXXX-XXX',
-    exames: [
-      { nome: 'Hemograma completo', checked: true },
-      { nome: 'Urina', checked: true },
-      { nome: 'Raio-X', checked: true }
-    ],
-    status: 'pendente'
-  },
-  '04': {
-    id: '04',
-    paciente: 'Luna',
-    especie: 'Felino',
-    tutor: 'Carlos',
-    contato: '(XX) XXXXX-XXXX',
-    endereco: 'Alameda das Flores, 126',
-    bairro: 'Jardim',
-    cidade: 'Modelópolis',
-    cep: 'XXXXX-XXX',
-    exames: [
-      { nome: 'Raio-X', checked: true },
-      { nome: 'Análise de sangue', checked: true }
-    ],
-    status: 'cancelado'
+let id = $derived($page.params.id);
+let solicitacao = $state(null);
+let loading = $state(true);
+let erro = $state('');
+
+async function carregarSolicitacao() {
+  loading = true;
+  erro = '';
+  
+  try {
+    solicitacao = await solicitacaoService.buscarSolicitacao(id);
+  } catch (error) {
+    console.error('Erro ao carregar solicitação:', error);
+    erro = error.message || 'Erro ao carregar solicitação';
+  } finally {
+    loading = false;
   }
-};
-
-// Id da solicitação baseado na URL
-$: id = $page.params.id;
-$: solicitacao = solicitacaoMap[id] || null;
-
-function handleVoltar() {
-  history.back();
 }
+
+function formatarData(dataISO) {
+  if (!dataISO) return 'N/A';
+  const data = new Date(dataISO);
+  return data.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function voltar() {
+  goto('/veterinario/solicitacoes');
+}
+
+function baixarLaudo() {
+  if (solicitacao?.resultado?.urlLaudoPdf) {
+    alert('Download do laudo iniciado!\n(Em produção, seria feito o download real do PDF)');
+    // window.open(solicitacao.resultado.urlLaudoPdf, '_blank');
+  }
+}
+
+onMount(() => {
+  carregarSolicitacao();
+});
 </script>
 
-{#if solicitacao}
-  <div class="solicitacao-detail">
-    <div class="page-header">
-      <button class="voltar-btn" on:click={handleVoltar}>
-        <span class="arrow">←</span>
-      </button>
-      <h1>Pedido #{solicitacao.id}</h1>
-    </div>
-    
-    <div class="content-box">
-      <div class="info-section">
-        <div class="info-row">
-          <div class="info-col">
-            <p class="info-label">Paciente: <span class="info-value">{solicitacao.paciente}</span></p>
-            <p class="info-label">Espécie: <span class="info-value">{solicitacao.especie}</span></p>
-          </div>
-          
-          <div class="info-col">
-            <p class="info-label">Tutor: <span class="info-value">{solicitacao.tutor}</span></p>
-            <p class="info-label">Contato: <span class="info-value">{solicitacao.contato}</span></p>
-          </div>
-        </div>
+<div class="detalhes-page">
+  {#if loading}
+    <LoadingSpinner color="#5DB578" size={50} />
+  {:else if erro}
+    <div class="erro-container">
+      <div class="erro-icon">
+        <FaExclamationTriangle />
       </div>
-      
-      <div class="info-section">
-        <h2>Exames:</h2>
-        <div class="exames-list">
-          {#each solicitacao.exames as exame}
-            <div class="exame-item">
-              <div class="checkbox checked">✓</div>
-              <span>{exame.nome}</span>
-            </div>
-          {/each}
-        </div>
-      </div>
-      
-      <div class="info-section">
-        <h2>Dados do Tutor:</h2>
-        <p class="info-label">Endereço: <span class="info-value">{solicitacao.endereco}</span></p>
-        <p class="info-label">Bairro: <span class="info-value">{solicitacao.bairro}</span>, Cidade: <span class="info-value">{solicitacao.cidade}</span></p>
-        <p class="info-label">CEP: <span class="info-value">{solicitacao.cep}</span></p>
-      </div>
-      
-      <div class="actions">
-        <button class="edit-btn">Editar</button>
-        <button class="resultado-btn {solicitacao.status === 'concluido' ? 'active' : ''}" disabled={solicitacao.status === 'cancelado'}>
-          {#if solicitacao.status === 'pendente'}
-            Aguardando resultados
-          {:else if solicitacao.status === 'cancelado'}
-            Solicitação cancelada
-          {:else}
-            Visualizar resultados
-          {/if}
+      <h2>Ops! Algo deu errado</h2>
+      <p>{erro}</p>
+      <div class="erro-acoes">
+        <button onclick={voltar} class="btn-voltar">
+          ← Voltar para lista
+        </button>
+        <button onclick={carregarSolicitacao} class="btn-retry">
+          🔄 Tentar novamente
         </button>
       </div>
     </div>
-  </div>
-{:else}
-  <div class="error-msg">
-    <h2>Solicitação não encontrada</h2>
-    <p>A solicitação #{id} não foi encontrada no sistema.</p>
-    <button class="voltar-btn" on:click={handleVoltar}>Voltar para lista de solicitações</button>
-  </div>
-{/if}
+  {:else if solicitacao}
+    <div class="header-detalhes">
+      <button onclick={voltar} class="btn-back">
+        ← Voltar
+      </button>
+      <div class="header-info">
+        <h1>Solicitação #{solicitacao.protocolo}</h1>
+        <StatusBadge status={solicitacao.status} />
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <!-- Coluna Esquerda: Informações -->
+      <div class="info-section">
+        <div class="card">
+          <h2 class="card-title">
+            <span class="title-icon"><FaClipboardList /></span>
+            Informações da Solicitação
+          </h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Protocolo:</span>
+              <span class="value">{solicitacao.protocolo}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Status:</span>
+              <span class="value"><StatusBadge status={solicitacao.status} /></span>
+            </div>
+            <div class="info-item">
+              <span class="label">Data da Solicitação:</span>
+              <span class="value">{formatarData(solicitacao.dataSolicitacao)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">
+            <span class="title-icon"><FaPaw /></span>
+            Dados do Animal
+          </h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Nome:</span>
+              <span class="value">{solicitacao.animal?.nome || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Espécie:</span>
+              <span class="value">{solicitacao.animal?.especie || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Raça:</span>
+              <span class="value">{solicitacao.animal?.raca || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Sexo:</span>
+              <span class="value">{solicitacao.animal?.sexo || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Data de Nascimento:</span>
+              <span class="value">{solicitacao.animal?.dataNascimento ? new Date(solicitacao.animal.dataNascimento).toLocaleDateString('pt-BR') : 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">
+            <span class="title-icon"><FaUser /></span>
+            Tutor
+          </h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Nome:</span>
+              <span class="value">{solicitacao.animal?.tutor?.nomeCompleto || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">CPF:</span>
+              <span class="value">{solicitacao.animal?.tutor?.cpf || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Email:</span>
+              <span class="value">{solicitacao.animal?.tutor?.email || 'N/A'}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Telefone:</span>
+              <span class="value">{solicitacao.animal?.tutor?.telefone || 'N/A'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Exames e Resultados -->
+      <div class="exames-section">
+        <div class="card">
+          <h2 class="card-title">
+            <span class="title-icon"><FaMicroscope /></span>
+            Exames Solicitados
+          </h2>
+          <ul class="exames-list">
+            {#each solicitacao.exames || [] as exame}
+              <li class="exame-item">
+                <strong>{exame.nome}</strong>
+                <p>{exame.descricao}</p>
+              </li>
+            {/each}
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">
+            <span class="title-icon"><FaStethoscope /></span>
+            Suspeita Clínica
+          </h2>
+          <p class="suspeita-texto">{solicitacao.suspeitaClinica}</p>
+        </div>
+
+        {#if solicitacao.status === 'CONCLUIDO' && solicitacao.resultado}
+          <div class="card resultado-card">
+            <h2 class="card-title">
+              <span class="title-icon"><FaCheckCircle /></span>
+              Resultado do Exame
+            </h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="label">Data do Laudo:</span>
+                <span class="value">{formatarData(solicitacao.resultado.dataLaudo)}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">Patologista:</span>
+                <span class="value">{solicitacao.resultado.patologistaResponsavel?.nome || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="observacoes-box">
+              <h3>Observações:</h3>
+              <p>{solicitacao.resultado.observacoes}</p>
+            </div>
+
+            <button onclick={baixarLaudo} class="btn-download">
+              <span class="btn-icon"><FaFilePdf /></span>
+              Baixar Laudo (PDF)
+            </button>
+          </div>
+        {:else if solicitacao.status === 'EM_ANALISE'}
+          <div class="card status-card analise">
+            <h2 class="card-title">
+              <span class="title-icon"><FaClock /></span>
+              Em Análise
+            </h2>
+            <p>O patologista está analisando esta solicitação. Você será notificado quando o laudo estiver pronto.</p>
+          </div>
+        {:else if solicitacao.status === 'RECEBIDO'}
+          <div class="card status-card recebido">
+            <h2 class="card-title">
+              <span class="title-icon"><FaInbox /></span>
+              Aguardando Análise
+            </h2>
+            <p>Sua solicitação foi recebida e está aguardando análise do patologista.</p>
+          </div>
+        {/if}
+      </div>
+    </div>
+  {/if}
+</div>
 
 <style>
-  .solicitacao-detail {
-    padding: 0;
-  }
-  
-  .page-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 24px;
-  }
-  
-  .voltar-btn {
-    background: none;
-    border: none;
-    display: flex;
-    align-items: center;
-    margin-right: 12px;
-    padding: 5px;
-    cursor: pointer;
-  }
-  
-  .arrow {
-    font-size: 20px;
-  }
-  
-  h1 {
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0;
-    color: #333;
-  }
-  
-  .content-box {
-    background-color: #f2f2f2;
-    border-radius: 8px;
-    padding: 20px;
-  }
-  
-  .info-section {
-    margin-bottom: 24px;
-  }
-  
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .info-col {
-    flex: 1;
-  }
-  
-  .info-label {
-    font-size: 14px;
-    color: #555;
-    margin: 5px 0;
-    font-weight: 500;
-  }
-  
-  .info-value {
-    font-weight: 400;
-  }
-  
-  h2 {
-    font-size: 18px;
-    margin: 0 0 12px 0;
-    color: #333;
-  }
-  
-  .exames-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .exame-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .checkbox {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #ccc;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: white;
-  }
-  
-  .checkbox.checked {
-    background-color: var(--color-primary-green);
-    border-color: var(--color-primary-green);
-  }
-  
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 30px;
-  }
-  
-  .edit-btn {
-    background-color: #ccc;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .edit-btn:hover {
-    background-color: #bbb;
-  }
-  
-  .resultado-btn {
-    background-color: #ccc;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 24px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #444;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .resultado-btn.active {
-    background-color: var(--color-primary-green);
-    color: white;
-  }
-  
-  .resultado-btn.active:hover {
-    background-color: var(--color-dark-green);
-  }
-  
-  .resultado-btn:disabled {
-    background-color: #e0e0e0;
-    color: #888;
-    cursor: not-allowed;
-  }
-  
-  .error-msg {
-    padding: 20px;
-    text-align: center;
-  }
+.detalhes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.header-detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.btn-back {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back:hover {
+  background: #e5e7eb;
+}
+
+.header-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-info h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  color: #5DB578;
+}
+
+.info-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  font-size: 15px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.exames-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.exame-item {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 3px solid #5DB578;
+}
+
+.exame-item strong {
+  display: block;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.exame-item p {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.suspeita-texto {
+  margin: 0;
+  padding: 16px;
+  background: #fef3c7;
+  border-radius: 8px;
+  color: #78350f;
+  line-height: 1.6;
+}
+
+.resultado-card {
+  border: 2px solid #D1FAE5;
+  background: #F0FDF4;
+}
+
+.observacoes-box {
+  margin: 20px 0;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+}
+
+.observacoes-box h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 8px 0;
+}
+
+.observacoes-box p {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.6;
+}
+
+.btn-download {
+  width: 100%;
+  padding: 14px;
+  background: #5DB578;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-download:hover {
+  background: #4a9163;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 181, 120, 0.3);
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.status-card {
+  border: 2px solid;
+  text-align: center;
+}
+
+.status-card.analise {
+  border-color: #FEF3C7;
+  background: #FFFBEB;
+}
+
+.status-card.recebido {
+  border-color: #DBEAFE;
+  background: #EFF6FF;
+}
+
+.status-card p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* Erro */
+.erro-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.erro-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  color: #f59e0b;
+  margin-bottom: 16px;
+}
+
+.erro-container h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 8px 0;
+}
+
+.erro-container p {
+  color: #991b1b;
+  font-weight: 500;
+  margin: 0 0 24px 0;
+}
+
+.erro-acoes {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-voltar,
+.btn-retry {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-voltar {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-voltar:hover {
+  background: #d1d5db;
+}
+
+.btn-retry {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-retry:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
 </style>

@@ -21,6 +21,9 @@ RUN mvn clean package -DskipTests
 # Usamos uma imagem leve do OpenJDK 21 apenas para rodar a aplicação
 FROM eclipse-temurin:21-jre-alpine
 
+# Instala curl para healthcheck
+RUN apk add --no-cache curl
+
 # Define o diretório de trabalho
 WORKDIR /app
 

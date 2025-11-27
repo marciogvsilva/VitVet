@@ -1,12 +1,20 @@
 <script>
-// A lógica para a home do veterinário ficará aqui.
+import { goto } from '$app/navigation';
 import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
 import FaPlus from 'svelte-icons/fa/FaPlus.svelte';
+
+function irParaSolicitacoes() {
+  goto('/veterinario/solicitacoes');
+}
+
+function irParaNovaSolicitacao() {
+  goto('/veterinario/nova-solicitacao');
+}
 </script>
 
 <div class="home-content">
   <div class="action-buttons">
-    <button class="action-button">
+    <button class="action-button" onclick={irParaSolicitacoes}>
       <span class="icon">
         <div class="icon-wrapper">
           <FaClipboardList />
@@ -14,7 +22,7 @@ import FaPlus from 'svelte-icons/fa/FaPlus.svelte';
       </span>
       <span>Solicitações</span>
     </button>
-    <button class="action-button">
+    <button class="action-button" onclick={irParaNovaSolicitacao}>
       <span class="icon">
         <div class="icon-wrapper">
           <FaPlus />

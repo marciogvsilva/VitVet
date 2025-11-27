@@ -1,11 +1,15 @@
 <script>
-// A lógica para a home do patologista ficará aqui.
+import { goto } from '$app/navigation';
 import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
+
+function irParaSolicitacoes() {
+  goto('/patologista/solicitacoes');
+}
 </script>
 
 <div class="home-content">
   <div class="action-buttons">
-    <button class="action-button">
+    <button class="action-button" onclick={irParaSolicitacoes}>
       <span class="icon">
         <div class="icon-wrapper">
           <FaClipboardList />

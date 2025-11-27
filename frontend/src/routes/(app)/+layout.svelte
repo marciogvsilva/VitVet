@@ -1,6 +1,10 @@
 <script>
 import { page } from '$app/stores';
+import { goto } from '$app/navigation';
 import { onMount } from 'svelte';
+import { authStore } from '$lib/stores/auth';
+import { authService } from '$lib/services';
+import ToastContainer from '$lib/components/ToastContainer.svelte';
 
 // Importando ícones do svelte-icons
 import FaHome from 'svelte-icons/fa/FaHome.svelte';
@@ -8,9 +12,14 @@ import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
 import FaPlus from 'svelte-icons/fa/FaPlus.svelte';
 import FaCog from 'svelte-icons/fa/FaCog.svelte';
 import FaMicroscope from 'svelte-icons/fa/FaMicroscope.svelte';
+import FaSignOutAlt from 'svelte-icons/fa/FaSignOutAlt.svelte';
 
 // Props para renderizar conteúdo filho
 let { children } = $props();
+
+// Estado de autenticação
+let isAuthenticated = $derived($authStore.isAuthenticated);
+let usuario = $derived($authStore.usuario);
 
 // Determina o tipo de usuário a partir da URL usando derived do Svelte 5
 let path = $derived($page.url.pathname);
@@ -42,11 +51,31 @@ let darkPrimaryColor = $derived(
   userType === 'veterinario' ? 'var(--color-dark-green)' : null
 );
 
-// Nome temporário do usuário
+// Nome do usuário (agora vem do store)
 let userName = $derived(
-  userType === 'patologista' ? 'Dr. Silva (Patologista)' : 
-  userType === 'veterinario' ? 'Dr. Santos (Veterinário)' : 'Usuário'
+  usuario ? `${usuario.nome} (${usuario.papel === 'PATOLOGISTA' ? 'Patologista' : 'Veterinário'})` : 'Usuário'
 );
+
+// Proteção de rota: verifica autenticação ao montar
+onMount(() => {
+  if (!isAuthenticated) {
+    goto('/');
+  }
+});
+
+// Função de logout
+async function handleLogout() {
+  try {
+    await authService.logout();
+    authStore.logout();
+    goto('/');
+  } catch (error) {
+    console.error('Erro ao fazer logout:', error);
+    // Mesmo com erro, limpa localmente
+    authStore.logout();
+    goto('/');
+  }
+}
 </script>
 
 <div class="app-layout">
@@ -123,6 +152,13 @@ let userName = $derived(
               </div>
             </span>
           </button>
+          <button class="icon-button" aria-label="Sair" on:click={handleLogout}>
+            <span class="icon">
+              <div class="icon-wrapper">
+                <FaSignOutAlt />
+              </div>
+            </span>
+          </button>
         </div>
       </div>
     </header>
@@ -133,11 +169,20 @@ let userName = $derived(
     <!-- Área de conteúdo principal com fundo cinza claro -->
     <main class="content-main">
       <div class="content-container">
-        {@render children()}
+        {#if isAuthenticated}
+          {@render children()}
+        {:else}
+          <div class="flex items-center justify-center h-full">
+            <p class="text-gray-600">Verificando autenticação...</p>
+          </div>
+        {/if}
       </div>
     </main>
   </div>
 </div>
+
+<!-- Container de notificações Toast -->
+<ToastContainer />
 
 <style>
 /* Cores definidas pelo usuário */
@@ -347,5 +392,25 @@ let userName = $derived(
   height: 100%;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.text-gray-600 {
+  color: #4b5563;
 }
 </style>

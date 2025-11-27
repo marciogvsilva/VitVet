@@ -1,298 +1,473 @@
 <script>
-// Dados de exemplo de solicitações
-const todasSolicitacoes = [
-  {
-    id: '01',
-    exames: 'hemograma completo, urina e ...',
-    paciente: 'Paçoca',
-    especie: 'Canino',
-    tutor: 'Roberta',
-    status: 'concluido'
-  },
-  {
-    id: '02',
-    exames: 'ultrassonografia',
-    paciente: 'Mia',
-    especie: 'Felino',
-    tutor: 'Priscilla',
-    status: 'pendente'
-  },
-  {
-    id: '03',
-    exames: 'hemograma completo, urina, ...',
-    paciente: 'Thor',
-    especie: 'Canino',
-    tutor: 'Thiago',
-    status: 'pendente'
-  },
-  {
-    id: '04',
-    exames: 'raio-x, análise de sangue',
-    paciente: 'Luna',
-    especie: 'Felino',
-    tutor: 'Carlos',
-    status: 'cancelado'
-  },
-  {
-    id: '05',
-    exames: 'hemograma, bioquímico, hormonal',
-    paciente: 'Max',
-    especie: 'Canino',
-    tutor: 'Ana Paula',
-    status: 'concluido'
-  },
-  {
-    id: '06',
-    exames: 'raio-x, urina, fezes',
-    paciente: 'Bella',
-    especie: 'Felino',
-    tutor: 'Roberto',
-    status: 'pendente'
-  },
-  {
-    id: '07',
-    exames: 'análise dermatológica, biópsia',
-    paciente: 'Rex',
-    especie: 'Canino',
-    tutor: 'Marcelo',
-    status: 'concluido'
-  }
-];
+import { onMount } from 'svelte';
+import { goto } from '$app/navigation';
+import { solicitacaoService } from '$lib/mocks/services';
+import SolicitacaoCard from '$lib/components/SolicitacaoCard.svelte';
+import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
+import FaExclamationCircle from 'svelte-icons/fa/FaExclamationCircle.svelte';
+import FaInbox from 'svelte-icons/fa/FaInbox.svelte';
+import FaClock from 'svelte-icons/fa/FaClock.svelte';
+import FaCheckCircle from 'svelte-icons/fa/FaCheckCircle.svelte';
 
-// Paginação
-let paginaAtual = 1;
-let itensPorPagina = 4;
-$: totalPaginas = Math.ceil(todasSolicitacoes.length / itensPorPagina);
-$: solicitacoes = todasSolicitacoes.slice(
-  (paginaAtual - 1) * itensPorPagina, 
-  paginaAtual * itensPorPagina
-);
+let solicitacoes = $state([]);
+let loading = $state(true);
+let erro = $state('');
 
-function irParaPagina(pagina) {
-  if (pagina >= 1 && pagina <= totalPaginas) {
-    paginaAtual = pagina;
+// Filtros
+let filtroStatus = $state('');
+let busca = $state('');
+
+async function carregarSolicitacoes() {
+  loading = true;
+  erro = '';
+  
+  try {
+    const filtros = {};
+    
+    if (filtroStatus) {
+      filtros.status = filtroStatus;
+    }
+    
+    if (busca.trim()) {
+      filtros.animal = busca.trim();
+    }
+    
+    solicitacoes = await solicitacaoService.listarSolicitacoes(filtros);
+  } catch (error) {
+    console.error('Erro ao carregar solicitações:', error);
+    erro = error.message || 'Erro ao carregar solicitações';
+  } finally {
+    loading = false;
   }
 }
+
+function verDetalhes(id) {
+  goto(`/veterinario/solicitacoes/${id}`);
+}
+
+function limparFiltros() {
+  filtroStatus = '';
+  busca = '';
+  carregarSolicitacoes();
+}
+
+function aplicarFiltroRapido(status) {
+  filtroStatus = status;
+  busca = '';
+  carregarSolicitacoes();
+}
+
+onMount(() => {
+  carregarSolicitacoes();
+});
 </script>
 
-<div class="solicitacoes-container">
-  <div class="content-area">
-    <h1>Solicitações</h1>
-    
-    <div class="solicitacoes-list">
-      {#each solicitacoes as solicitacao}
-        <div class="solicitacao-card">
-          <div class="solicitacao-info">
-            <div class="solicitacao-header">
-              <h2>Pedido #{solicitacao.id}</h2>
-              <div class="status-badge" class:concluido={solicitacao.status === 'concluido'} class:pendente={solicitacao.status === 'pendente'} class:cancelado={solicitacao.status === 'cancelado'}>
-                {solicitacao.status === 'concluido' ? 'Concluído' : 
-                solicitacao.status === 'pendente' ? 'Pendente' : 'Cancelado'}
-              </div>
-            </div>
-            <p>Exames: {solicitacao.exames}</p>
-          </div>
-          
-          <div class="solicitacao-details">
-            <div class="paciente-info">
-              <p>Paciente: {solicitacao.paciente}</p>
-              <p>Espécie: {solicitacao.especie}</p>
-            </div>
-            
-            <div class="tutor-info">
-              <p>Tutor: {solicitacao.tutor}</p>
-            </div>
-            
-            <div class="action-button">
-              <a href="/veterinario/solicitacoes/{solicitacao.id}" class="resultado-btn active">
-                Visualizar
-              </a>
-            </div>
-          </div>
-        </div>
-      {/each}
+<div class="solicitacoes-page">
+  <div class="page-header">
+    <h1>Minhas Solicitações</h1>
+    <p class="subtitle">Gerencie e acompanhe suas solicitações de exames</p>
+  </div>
+
+  <!-- Atalhos rápidos -->
+  <div class="atalhos">
+    <button 
+      onclick={() => aplicarFiltroRapido('RECEBIDO')} 
+      class="atalho-btn recebido"
+      class:ativo={filtroStatus === 'RECEBIDO'}
+    >
+      <span class="atalho-icon"><FaInbox /></span>
+      Novas Solicitações
+    </button>
+    <button 
+      onclick={() => aplicarFiltroRapido('EM_ANALISE')} 
+      class="atalho-btn analise"
+      class:ativo={filtroStatus === 'EM_ANALISE'}
+    >
+      <span class="atalho-icon"><FaClock /></span>
+      Em Análise
+    </button>
+    <button 
+      onclick={() => aplicarFiltroRapido('CONCLUIDO')} 
+      class="atalho-btn concluido"
+      class:ativo={filtroStatus === 'CONCLUIDO'}
+    >
+      <span class="atalho-icon"><FaCheckCircle /></span>
+      Concluídos
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros">
+    <div class="filtro-grupo">
+      <label for="status">Status:</label>
+      <select 
+        id="status" 
+        bind:value={filtroStatus} 
+        onchange={carregarSolicitacoes}
+        class="select-input"
+      >
+        <option value="">Todos os status</option>
+        <option value="RECEBIDO">Recebido</option>
+        <option value="EM_ANALISE">Em Análise</option>
+        <option value="CONCLUIDO">Concluído</option>
+        <option value="CANCELADO">Cancelado</option>
+      </select>
+    </div>
+
+    <div class="filtro-grupo">
+      <label for="busca">Buscar animal:</label>
+      <input
+        id="busca"
+        type="text"
+        bind:value={busca}
+        onkeyup={(e) => e.key === 'Enter' && carregarSolicitacoes()}
+        placeholder="Nome do animal..."
+        class="text-input"
+      />
+    </div>
+
+    <div class="filtro-acoes">
+      <button onclick={carregarSolicitacoes} class="btn-buscar">
+        Buscar
+      </button>
+      <button onclick={limparFiltros} class="btn-limpar">
+        Limpar
+      </button>
     </div>
   </div>
-  
-  <!-- Paginação fixa -->
-  <div class="pagination-container">
-    <div class="pagination">
-      <button 
-        class="pagination-btn" 
-        on:click={() => irParaPagina(paginaAtual - 1)} 
-        disabled={paginaAtual === 1}
-      >
-        Anterior
-      </button>
+
+  <!-- Conteúdo -->
+  <div class="content">
+    {#if loading}
+      <LoadingSpinner color="#5DB578" />
+    {:else if erro}
+      <div class="erro-box">
+        <div class="erro-icon-box">
+          <FaExclamationCircle />
+        </div>
+        <p>{erro}</p>
+        <button onclick={carregarSolicitacoes} class="btn-retry">
+          Tentar novamente
+        </button>
+      </div>
+    {:else if solicitacoes.length === 0}
+      <div class="empty-state">
+        <div class="empty-icon">
+          <FaClipboardList />
+        </div>
+        <h2>Nenhuma solicitação encontrada</h2>
+        <p>
+          {#if filtroStatus || busca}
+            Tente ajustar os filtros ou criar uma nova solicitação.
+          {:else}
+            Você ainda não criou nenhuma solicitação de exame.
+          {/if}
+        </p>
+        <button 
+          onclick={() => goto('/veterinario/nova-solicitacao')} 
+          class="btn-nova"
+        >
+          + Nova Solicitação
+        </button>
+      </div>
+    {:else}
+      <div class="resultados-info">
+        <p>
+          {solicitacoes.length} 
+          {solicitacoes.length === 1 ? 'solicitação encontrada' : 'solicitações encontradas'}
+        </p>
+      </div>
       
-      <span class="pagination-info">
-        Página {paginaAtual} de {totalPaginas}
-      </span>
-      
-      <button 
-        class="pagination-btn" 
-        on:click={() => irParaPagina(paginaAtual + 1)} 
-        disabled={paginaAtual === totalPaginas}
-      >
-        Próxima
-      </button>
-    </div>
+      <div class="solicitacoes-grid">
+        {#each solicitacoes as solicitacao (solicitacao.id)}
+          <SolicitacaoCard 
+            {solicitacao} 
+            onclick={() => verDetalhes(solicitacao.id)}
+          />
+        {/each}
+      </div>
+    {/if}
   </div>
 </div>
 
 <style>
-  .solicitacoes-container {
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    position: relative;
-  }
-  
-  .content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 70px; /* Espaço para a paginação */
-  }
-  
-  h1 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    color: #333;
-  }
-  
-  .solicitacoes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .solicitacao-card {
-    background-color: #f2f2f2;
-    border-radius: 8px;
-    padding: 16px 20px;
-  }
-  
-  .solicitacao-info {
-    margin-bottom: 12px;
-  }
-  
-  .solicitacao-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  
-  .solicitacao-info h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-  }
-  
-  .status-badge {
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 12px;
-  }
-  
-  .status-badge.pendente {
-    background-color: #f0ad4e; /* Amarelo/laranja para pendentes */
-    color: white;
-  }
-  
-  .status-badge.concluido {
-    background-color: #5DB578; /* Verde para concluídos */
-    color: white;
-  }
-  
-  .status-badge.cancelado {
-    background-color: #d9534f; /* Vermelho para cancelados */
-    color: white;
-  }
-  
-  .solicitacao-info p {
-    margin: 0;
-    color: #555;
-    font-size: 15px;
-  }
-  
-  .solicitacao-details {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .paciente-info p, .tutor-info p {
-    margin: 4px 0;
-    font-size: 14px;
-  }
-  
-  .resultado-btn {
-    background-color: #ccc;
-    color: #555;
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: none;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-  }
-  
-  .resultado-btn.active {
-    background-color: var(--color-primary-green);
-    color: white;
-  }
-  
-  /* Em caso de hover nos botões ativos */
-  .resultado-btn.active:hover {
-    background-color: var(--color-dark-green);
-  }
-  
-  /* Paginação fixa */
-  .pagination-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: transparent;
-    padding: 16px 0;
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
-  }
-  
-  .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .pagination-btn {
-    padding: 8px 16px;
-    border: 1px solid var(--color-primary-green);
-    border-radius: 20px;
-    background-color: transparent;
-    color: var(--color-primary-green);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .pagination-btn:hover:not(:disabled) {
-    background-color: var(--color-primary-green);
-    color: white;
-  }
-  
-  .pagination-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .pagination-info {
-    font-size: 14px;
-    color: #555;
-  }
+.solicitacoes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Filtros */
+.filtros {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.filtro-grupo label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.select-input,
+.text-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.select-input:focus,
+.text-input:focus {
+  outline: none;
+  border-color: #5DB578;
+  box-shadow: 0 0 0 3px rgba(93, 181, 120, 0.1);
+}
+
+.filtro-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-buscar,
+.btn-limpar {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-buscar {
+  background: #5DB578;
+  color: white;
+}
+
+.btn-buscar:hover {
+  background: #4a9163;
+}
+
+.btn-limpar {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn-limpar:hover {
+  background: #d1d5db;
+}
+
+/* Conteúdo */
+.content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.resultados-info {
+  margin-bottom: 16px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.solicitacoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 16px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.erro-icon-box {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  color: #ef4444;
+  margin-bottom: 12px;
+}
+
+.empty-state h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 8px 0;
+}
+
+.empty-state p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  max-width: 400px;
+}
+
+.btn-nova {
+  padding: 12px 24px;
+  background: #5DB578;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-nova:hover {
+  background: #4a9163;
+}
+
+/* Atalhos */
+.atalhos {
+  display: flex;
+  gap: 12px;
+}
+
+.atalho-btn {
+  flex: 1;
+  padding: 16px;
+  border: 2px solid;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.atalho-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.atalho-btn.recebido {
+  border-color: #DBEAFE;
+  color: #1E40AF;
+}
+
+.atalho-btn.recebido:hover {
+  background: #DBEAFE;
+}
+
+.atalho-btn.recebido.ativo {
+  background: #DBEAFE;
+  border-width: 3px;
+  font-weight: 700;
+}
+
+.atalho-btn.analise {
+  border-color: #FEF3C7;
+  color: #92400E;
+}
+
+.atalho-btn.analise:hover {
+  background: #FEF3C7;
+}
+
+.atalho-btn.analise.ativo {
+  background: #FEF3C7;
+  border-width: 3px;
+  font-weight: 700;
+}
+
+.atalho-btn.concluido {
+  border-color: #D1FAE5;
+  color: #065F46;
+}
+
+.atalho-btn.concluido:hover {
+  background: #D1FAE5;
+}
+
+.atalho-btn.concluido.ativo {
+  background: #D1FAE5;
+  border-width: 3px;
+  font-weight: 700;
+}
+
+/* Erro */
+.erro-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.erro-box p {
+  color: #991b1b;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.btn-retry {
+  padding: 12px 24px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.btn-retry:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
 </style>

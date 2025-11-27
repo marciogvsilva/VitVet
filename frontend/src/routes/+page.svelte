@@ -1,25 +1,80 @@
 <script>
-// Importação necessária para navegação programática
 import { goto } from '$app/navigation';
+import { authService } from '$lib/services';
+import { authStore } from '$lib/stores/auth';
+import { toastStore } from '$lib/stores/toast';
+import ToastContainer from '$lib/components/ToastContainer.svelte';
 
-// A lógica para a página de login ficará aqui.
-let userType = "patologista"; // Valor padrão: patologista
+let userType = "patologista";
+let email = "";
+let senha = "";
+let loading = false;
+let erro = "";
 
-function handleLogin() {
-  // Aqui irá a lógica de login quando implementarmos o backend
-  console.log('Tentativa de login como', userType);
-  
-  // Redireciona para a página apropriada com base no tipo de usuário
-  if (userType === 'patologista') {
-    goto('/patologista/home');
+// Preenche credenciais baseado no tipo selecionado
+function selectUserType(type) {
+  userType = type;
+  if (type === 'patologista') {
+    email = 'pato@vitvet.com';
+    senha = '123';
   } else {
-    goto('/veterinario/home');
+    email = 'vet@vitvet.com';
+    senha = '123';
   }
 }
 
-function selectUserType(type) {
-  userType = type;
+async function handleLogin(event) {
+  event.preventDefault();
+  loading = true;
+  erro = "";
+  
+  try {
+    // Chama o serviço de login (Mock ou API Real, dependendo do .env)
+    const response = await authService.login(email, senha);
+    
+    // Para compatibilidade com mock e API real
+    let token, usuario;
+    
+    if (response.token && response.usuario) {
+      // Formato da API real
+      token = response.token;
+      usuario = response.usuario;
+    } else if (response.token) {
+      // Formato do mock (precisa buscar usuário)
+      token = response.token;
+      usuario = await authService.getUsuarioLogado?.(token) || { 
+        email, 
+        papel: userType.toUpperCase(),
+        nome: email.split('@')[0]
+      };
+    }
+    
+    // Salva no store (persiste no localStorage)
+    authStore.login(token, usuario);
+    
+    // Mostra toast de sucesso
+    toastStore.success(`Bem-vindo, ${usuario.nome || usuario.email}!`);
+    
+    // Redireciona baseado no papel do usuário
+    if (usuario.papel === 'PATOLOGISTA') {
+      goto('/patologista/home');
+    } else if (usuario.papel === 'VETERINARIO') {
+      goto('/veterinario/home');
+    } else {
+      // Fallback se o papel não for reconhecido
+      goto('/veterinario/home');
+    }
+  } catch (error) {
+    erro = error.message || "Erro ao fazer login. Verifique suas credenciais.";
+    toastStore.error(erro);
+    console.error('Erro no login:', error);
+  } finally {
+    loading = false;
+  }
 }
+
+// Inicializa com credenciais do patologista
+selectUserType('patologista');
 </script>
 
 <div class="flex min-h-screen items-center justify-center bg-background-light font-sans">
@@ -46,7 +101,7 @@ function selectUserType(type) {
 				<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900">Exames - VitVet</h2>
 				<p class="mt-2 text-center text-sm text-gray-600">Faça login na sua conta</p>
 			</div>
-			<form class="mt-8 space-y-6" action="#" method="POST">
+			<form class="mt-8 space-y-6" on:submit={handleLogin}>
 				<div class="space-y-4 rounded-md">
 					<div>
 						<label for="email-address" class="sr-only">Email</label>
@@ -56,7 +111,9 @@ function selectUserType(type) {
 							type="email"
 							autocomplete="email"
 							required
-							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm"
+							bind:value={email}
+							disabled={loading}
+							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
 							placeholder="Endereço de e-mail"
 						/>
 					</div>
@@ -68,11 +125,19 @@ function selectUserType(type) {
 							type="password"
 							autocomplete="current-password"
 							required
-							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm"
+							bind:value={senha}
+							disabled={loading}
+							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
 							placeholder="Senha"
 						/>
 					</div>
 				</div>
+
+				{#if erro}
+					<div class="rounded-md bg-red-50 p-3">
+						<p class="text-sm text-red-800">{erro}</p>
+					</div>
+				{/if}
 
 				<div class="flex items-center justify-between">
 					<div class="flex items-center">
@@ -95,16 +160,19 @@ function selectUserType(type) {
 				<div>
 					<button
 						type="submit"
-						class="group relative flex w-full justify-center rounded-full border border-transparent px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {userType === 'patologista' ? 'bg-primary-blue hover:bg-blue-800 focus:ring-primary-blue' : 'bg-primary-green hover:bg-green-700 focus:ring-primary-green'}"
-						on:click|preventDefault={handleLogin}
+						disabled={loading}
+						class="group relative flex w-full justify-center rounded-full border border-transparent px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {userType === 'patologista' ? 'bg-primary-blue hover:bg-blue-800 focus:ring-primary-blue' : 'bg-primary-green hover:bg-green-700 focus:ring-primary-green'} disabled:opacity-50 disabled:cursor-not-allowed"
 					>
-						Entrar
+						{loading ? 'Entrando...' : 'Entrar'}
 					</button>
 				</div>
 			</form>
 		</div>
 	</div>
 </div>
+
+<!-- Container de notificações Toast -->
+<ToastContainer />
 
 <style>
 /* Cores definidas pelo usuário */
