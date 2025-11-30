@@ -24,28 +24,28 @@ class SolicitacaoExameServiceFilterTest {
     @Test
     @DisplayName("Deve filtrar apenas por status")
     void filtrarPorStatus() {
-        service.listar(StatusSolicitacao.CONCLUIDO, null);
+        service.listar(StatusSolicitacao.CONCLUIDO, null, null);
         verify(repository).findByStatus(StatusSolicitacao.CONCLUIDO);
     }
 
     @Test
     @DisplayName("Deve filtrar apenas por nome do animal")
     void filtrarPorAnimal() {
-        service.listar(null, "Rex");
+        service.listar(null, "Rex", null);
         verify(repository).findByAnimalNomeContainingIgnoreCase("Rex");
     }
 
     @Test
     @DisplayName("Deve filtrar por ambos")
     void filtrarPorAmbos() {
-        service.listar(StatusSolicitacao.RECEBIDO, "Rex");
+        service.listar(StatusSolicitacao.RECEBIDO, "Pipoca", "Ana Silva");
         verify(repository).findByStatusAndAnimalNomeContainingIgnoreCase(StatusSolicitacao.RECEBIDO, "Rex");
     }
 
     @Test
     @DisplayName("Deve listar todos se nenhum filtro for passado")
     void listarTodosSemFiltro() {
-        service.listar(null, null);
+        service.listar(null, null, null);
         verify(repository).findAll();
     }
 }

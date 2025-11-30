@@ -78,7 +78,7 @@ class SolicitacaoExameControllerTest {
         List<SolicitacaoExame> listaSolicitacoes = Collections.singletonList(solicitacao);
 
         // Correção: o método listar agora aceita filtros (null, null para listar todos)
-        when(solicitacaoService.listar(null, null)).thenReturn(listaSolicitacoes);
+        when(solicitacaoService.listar(null, null, null)).thenReturn(listaSolicitacoes);
 
         mockMvc.perform(get("/api/solicitacoes"))
                 .andExpect(status().isOk())

@@ -77,9 +77,10 @@ public class SolicitacaoExameController {
     @LogDeAuditoria(acao = "LISTAGEM DE SOLICITACOES")
     public ResponseEntity<List<SolicitacaoExame>> listar(
             @RequestParam(required = false) StatusSolicitacao status,
-            @RequestParam(required = false) String animal) {
+            @RequestParam(required = false) String animal,
+            @RequestParam(required = false) String tutor) {
 
-        List<SolicitacaoExame> solicitacoes = solicitacaoService.listar(status, animal);
+        List<SolicitacaoExame> solicitacoes = solicitacaoService.listar(status, animal, tutor);
         return ResponseEntity.ok(solicitacoes);
     }
 }
