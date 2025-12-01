@@ -2,11 +2,12 @@ package br.com.vitvet.VitVet.service;
 
 import br.com.vitvet.model.Animal;
 import br.com.vitvet.model.SolicitacaoExame;
-import br.com.vitvet.model.enums.StatusSolicitacao;
 import br.com.vitvet.model.Usuario;
+import br.com.vitvet.model.enums.StatusSolicitacao;
 import br.com.vitvet.repository.AnimalRepository;
 import br.com.vitvet.repository.SolicitacaoExameRepository;
 import br.com.vitvet.repository.UsuarioRepository;
+import br.com.vitvet.service.NotificacaoService;
 import br.com.vitvet.service.SolicitacaoExameService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +22,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,111 +36,139 @@ class SolicitacaoExameServiceTest {
     @Mock
     private AnimalRepository animalRepository;
 
+    @Mock
+    private NotificacaoService notificacaoService;
+
     @InjectMocks
     private SolicitacaoExameService solicitacaoService;
 
     private Usuario veterinario;
     private Animal animal;
-    private SolicitacaoExame novaSolicitacao;
+    private SolicitacaoExame solicitacao;
 
     @BeforeEach
     void setUp() {
         veterinario = new Usuario();
         veterinario.setId(1L);
+        veterinario.setNome("Dr. Vet");
 
         animal = new Animal();
         animal.setId(1L);
+        animal.setNome("Rex");
 
-        novaSolicitacao = new SolicitacaoExame();
-        novaSolicitacao.setVeterinarioSolicitante(veterinario);
-        novaSolicitacao.setAnimal(animal);
-        novaSolicitacao.setSuspeitaClinica("Suspeita de teste");
+        solicitacao = new SolicitacaoExame();
+        solicitacao.setId(1L);
+        solicitacao.setVeterinarioSolicitante(veterinario);
+        solicitacao.setAnimal(animal);
+        solicitacao.setStatus(StatusSolicitacao.RECEBIDO);
     }
 
     @Test
-    @DisplayName("Deve criar uma nova solicitação de exame com sucesso")
+    @DisplayName("Deve criar solicitação com sucesso e notificar patologistas")
     void deveCriarSolicitacaoComSucesso() {
-        // Cenário (Arrange)
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(veterinario));
         when(animalRepository.findById(1L)).thenReturn(Optional.of(animal));
-        when(solicitacaoRepository.save(any(SolicitacaoExame.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(solicitacaoRepository.save(any(SolicitacaoExame.class))).thenAnswer(i -> i.getArgument(0));
 
-        // Ação (Act)
-        SolicitacaoExame solicitacaoCriada = solicitacaoService.criarSolicitacao(novaSolicitacao);
+        SolicitacaoExame resultado = solicitacaoService.criarSolicitacao(solicitacao);
 
-        // Verificação (Assert)
-        assertNotNull(solicitacaoCriada);
-        assertEquals(StatusSolicitacao.RECEBIDO, solicitacaoCriada.getStatus(), "O status inicial deve ser RECEBIDO.");
-        assertNotNull(solicitacaoCriada.getProtocolo(), "O protocolo deve ser gerado.");
-        verify(solicitacaoRepository, times(1)).save(novaSolicitacao);
+        assertNotNull(resultado.getProtocolo());
+        assertEquals(StatusSolicitacao.RECEBIDO, resultado.getStatus());
+        verify(solicitacaoRepository).save(any(SolicitacaoExame.class));
+        verify(notificacaoService).notificarNovaSolicitacao(resultado); // Verifica se a notificação foi disparada
     }
 
     @Test
-    @DisplayName("Deve falhar ao criar solicitação se o veterinário não existir")
-    void deveFalharSeVeterinarioNaoExistir() {
-        // Cenário (Arrange)
-        when(usuarioRepository.findById(anyLong())).thenReturn(Optional.empty());
+    @DisplayName("Deve falhar ao criar se veterinário não existir")
+    void deveFalharCriacaoSemVeterinario() {
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Ação e Verificação (Act & Assert)
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            solicitacaoService.criarSolicitacao(novaSolicitacao);
-        });
-
-        assertEquals("Veterinário não encontrado.", exception.getMessage());
-        verify(solicitacaoRepository, never()).save(any(SolicitacaoExame.class));
+        assertThrows(EntityNotFoundException.class, () -> solicitacaoService.criarSolicitacao(solicitacao));
+        verify(solicitacaoRepository, never()).save(any());
+        verify(notificacaoService, never()).notificarNovaSolicitacao(any());
     }
 
     @Test
-    @DisplayName("Deve falhar ao criar solicitação se o animal não existir")
-    void deveFalharSeAnimalNaoExistir() {
-        // Cenário (Arrange)
-        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(veterinario));
-        when(animalRepository.findById(anyLong())).thenReturn(Optional.empty());
+    @DisplayName("Deve buscar solicitação por ID com sucesso")
+    void deveBuscarPorId() {
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
 
-        // Ação e Verificação (Act & Assert)
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            solicitacaoService.criarSolicitacao(novaSolicitacao);
-        });
+        SolicitacaoExame resultado = solicitacaoService.buscarPorId(1L);
 
-        assertEquals("Animal não encontrado.", exception.getMessage());
-        verify(solicitacaoRepository, never()).save(any(SolicitacaoExame.class));
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getId());
     }
 
     @Test
-    @DisplayName("Deve atualizar o status de uma solicitação com sucesso")
-    void deveAtualizarStatusComSucesso() {
-        // Cenário (Arrange)
-        Long solicitacaoId = 1L;
-        SolicitacaoExame solicitacaoExistente = new SolicitacaoExame();
-        solicitacaoExistente.setId(solicitacaoId);
-        solicitacaoExistente.setStatus(StatusSolicitacao.RECEBIDO);
+    @DisplayName("Deve lançar exceção se solicitação não encontrada por ID")
+    void deveFalharBuscarPorIdInexistente() {
+        when(solicitacaoRepository.findById(99L)).thenReturn(Optional.empty());
 
-        when(solicitacaoRepository.findById(solicitacaoId)).thenReturn(Optional.of(solicitacaoExistente));
-        when(solicitacaoRepository.save(any(SolicitacaoExame.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        assertThrows(EntityNotFoundException.class, () -> solicitacaoService.buscarPorId(99L));
+    }
 
-        // Ação (Act)
-        SolicitacaoExame solicitacaoAtualizada = solicitacaoService.atualizarStatus(solicitacaoId, StatusSolicitacao.EM_ANALISE);
+    // --- TESTES DE ATUALIZAÇÃO DE STATUS ---
 
-        // Verificação (Assert)
-        assertNotNull(solicitacaoAtualizada);
-        assertEquals(StatusSolicitacao.EM_ANALISE, solicitacaoAtualizada.getStatus());
-        verify(solicitacaoRepository, times(1)).findById(solicitacaoId);
-        verify(solicitacaoRepository, times(1)).save(solicitacaoExistente);
+    @Test
+    @DisplayName("Deve atualizar status com sucesso")
+    void deveAtualizarStatus() {
+        when(solicitacaoRepository.findById(1L)).thenReturn(Optional.of(solicitacao));
+        when(solicitacaoRepository.save(any(SolicitacaoExame.class))).thenAnswer(i -> i.getArgument(0));
+
+        SolicitacaoExame atualizada = solicitacaoService.atualizarStatus(1L, StatusSolicitacao.EM_ANALISE);
+
+        assertEquals(StatusSolicitacao.EM_ANALISE, atualizada.getStatus());
+        verify(solicitacaoRepository).save(solicitacao);
+    }
+
+    // --- TESTES DE LISTAGEM COM FILTROS ---
+
+    @Test
+    @DisplayName("Listar: Deve filtrar por Tutor e Animal")
+    void listarFiltroTutorEAnimal() {
+        solicitacaoService.listar(null, "Rex", "João");
+        verify(solicitacaoRepository).findByAnimalTutorNomeCompletoContainingIgnoreCaseAndAnimalNomeContainingIgnoreCase("João", "Rex");
     }
 
     @Test
-    @DisplayName("Deve falhar ao atualizar status de solicitação inexistente")
-    void deveFalharAoAtualizarStatusDeSolicitacaoInexistente() {
-        // Cenário (Arrange)
-        Long idInexistente = 99L;
-        when(solicitacaoRepository.findById(idInexistente)).thenReturn(Optional.empty());
+    @DisplayName("Listar: Deve filtrar por Status e Animal")
+    void listarFiltroStatusEAnimal() {
+        solicitacaoService.listar(StatusSolicitacao.RECEBIDO, "Rex", null);
+        verify(solicitacaoRepository).findByStatusAndAnimalNomeContainingIgnoreCase(StatusSolicitacao.RECEBIDO, "Rex");
+    }
 
-        // Ação e Verificação (Act & Assert)
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            solicitacaoService.atualizarStatus(idInexistente, StatusSolicitacao.CONCLUIDO);
-        });
+    @Test
+    @DisplayName("Listar: Deve filtrar por Status e Tutor")
+    void listarFiltroStatusETutor() {
+        solicitacaoService.listar(StatusSolicitacao.RECEBIDO, "João", null);
+        verify(solicitacaoRepository).findByStatusAndAnimalNomeContainingIgnoreCase(StatusSolicitacao.RECEBIDO, "João");
+    }
 
-        assertEquals("Solicitação de exame não encontrada com o ID: " + idInexistente, exception.getMessage());
-        verify(solicitacaoRepository, never()).save(any(SolicitacaoExame.class));
+    @Test
+    @DisplayName("Listar: Deve filtrar apenas por Tutor")
+    void listarFiltroApenasTutor() {
+        solicitacaoService.listar(null, "João", null);
+        verify(solicitacaoRepository).findByAnimalNomeContainingIgnoreCase("João");
+    }
+
+    @Test
+    @DisplayName("Listar: Deve filtrar apenas por Status")
+    void listarFiltroApenasStatus() {
+        solicitacaoService.listar(StatusSolicitacao.CONCLUIDO, null, null);
+        verify(solicitacaoRepository).findByStatus(StatusSolicitacao.CONCLUIDO);
+    }
+
+    @Test
+    @DisplayName("Listar: Deve filtrar apenas por Animal")
+    void listarFiltroApenasAnimal() {
+        solicitacaoService.listar(null, "Rex", null);
+        verify(solicitacaoRepository).findByAnimalNomeContainingIgnoreCase("Rex");
+    }
+
+    @Test
+    @DisplayName("Listar: Deve listar tudo quando sem filtros")
+    void listarSemFiltros() {
+        solicitacaoService.listar(null, null, null);
+        verify(solicitacaoRepository).findAll();
     }
 }

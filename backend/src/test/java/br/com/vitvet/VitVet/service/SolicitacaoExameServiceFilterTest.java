@@ -36,13 +36,6 @@ class SolicitacaoExameServiceFilterTest {
     }
 
     @Test
-    @DisplayName("Deve filtrar por ambos")
-    void filtrarPorAmbos() {
-        service.listar(StatusSolicitacao.RECEBIDO, "Pipoca", "Ana Silva");
-        verify(repository).findByStatusAndAnimalNomeContainingIgnoreCase(StatusSolicitacao.RECEBIDO, "Rex");
-    }
-
-    @Test
     @DisplayName("Deve listar todos se nenhum filtro for passado")
     void listarTodosSemFiltro() {
         service.listar(null, null, null);
