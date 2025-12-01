@@ -29,21 +29,41 @@ function irParaSolicitacoes() {
 
 .action-buttons {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .action-buttons {
+    flex-direction: row;
+    gap: 16px;
+  }
 }
 
 .action-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
+  padding: 14px 24px;
   background-color: var(--color-primary-blue);
   color: white;
   border: none;
   border-radius: 40px;
   font-weight: 500;
+  font-size: 15px;
   cursor: pointer;
   transition: background-color 0.2s;
+  width: 100%;
+  min-height: 48px;
+}
+
+@media (min-width: 768px) {
+  .action-button {
+    width: auto;
+    padding: 12px 24px;
+    font-size: 16px;
+  }
 }
 
 .action-button:hover {
@@ -54,7 +74,13 @@ function irParaSolicitacoes() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 18px;
+}
+
+@media (min-width: 768px) {
+  .icon {
+    font-size: 20px;
+  }
 }
 
 .icon-wrapper {
@@ -66,7 +92,14 @@ function irParaSolicitacoes() {
 }
 
 .icon .icon-wrapper {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 768px) {
+  .icon .icon-wrapper {
+    width: 20px;
+    height: 20px;
+  }
 }
 </style>

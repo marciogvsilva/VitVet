@@ -15,10 +15,10 @@ let erro = "";
 function selectUserType(type) {
   userType = type;
   if (type === 'patologista') {
-    email = 'pato@vitvet.com';
+    email = 'juliana.santos@vitvet.com';
     senha = '123';
   } else {
-    email = 'vet@vitvet.com';
+    email = 'rafael.mendes@vitvet.com';
     senha = '123';
   }
 }
@@ -77,18 +77,18 @@ async function handleLogin(event) {
 selectUserType('patologista');
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-background-light font-sans">
-	<div class="w-full max-w-md space-y-0 rounded-xl bg-white shadow-lg">
+<div class="flex min-h-screen items-center justify-center bg-background-light font-sans px-4 md:px-6 lg:px-0">
+	<div class="w-full max-w-[calc(100%-2rem)] md:max-w-md space-y-0 rounded-xl bg-white shadow-lg login-card">
 		<!-- Seletor de tipo de usuário -->
 		<div class="flex w-full overflow-hidden rounded-t-xl">
 			<button 
-				class="flex-1 py-4 px-4 text-center font-medium transition-colors {userType === 'patologista' ? 'bg-primary-blue text-white' : 'bg-secondary-blue text-gray-700 hover:bg-secondary-blue/80'}" 
+				class="flex-1 py-3 px-3 md:py-4 md:px-4 text-center text-sm md:text-base font-medium transition-colors {userType === 'patologista' ? 'bg-primary-blue text-white' : 'bg-secondary-blue text-gray-700 hover:bg-secondary-blue/80'}" 
 				on:click={() => selectUserType('patologista')}
 			>
 				Patologista
 			</button>
 			<button 
-				class="flex-1 py-4 px-4 text-center font-medium transition-colors {userType === 'veterinario' ? 'bg-primary-green text-white' : 'bg-secondary-green text-gray-700 hover:bg-secondary-green/80'}" 
+				class="flex-1 py-3 px-3 md:py-4 md:px-4 text-center text-sm md:text-base font-medium transition-colors {userType === 'veterinario' ? 'bg-primary-green text-white' : 'bg-secondary-green text-gray-700 hover:bg-secondary-green/80'}" 
 				on:click={() => selectUserType('veterinario')}
 			>
 				Veterinário
@@ -96,12 +96,12 @@ selectUserType('patologista');
 		</div>
 		
 		<!-- Formulário de login -->
-		<div class="p-10 space-y-8">
+		<div class="p-6 md:p-8 lg:p-10 space-y-6 md:space-y-8">
 			<div>
-				<h2 class="text-center text-3xl font-bold tracking-tight text-gray-900">Exames - VitVet</h2>
+				<h2 class="text-center text-2xl md:text-3xl font-bold tracking-tight text-gray-900">Exames - VitVet</h2>
 				<p class="mt-2 text-center text-sm text-gray-600">Faça login na sua conta</p>
 			</div>
-			<form class="mt-8 space-y-6" on:submit={handleLogin}>
+			<form class="mt-6 md:mt-8 space-y-5 md:space-y-6" on:submit={handleLogin}>
 				<div class="space-y-4 rounded-md">
 					<div>
 						<label for="email-address" class="sr-only">Email</label>
@@ -113,7 +113,7 @@ selectUserType('patologista');
 							required
 							bind:value={email}
 							disabled={loading}
-							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+							class="form-input block w-full rounded-md border-gray-300 py-2.5 md:py-3 placeholder-gray-500 shadow-sm text-sm md:text-base {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} disabled:opacity-50 disabled:cursor-not-allowed"
 							placeholder="Endereço de e-mail"
 						/>
 					</div>
@@ -127,7 +127,7 @@ selectUserType('patologista');
 							required
 							bind:value={senha}
 							disabled={loading}
-							class="form-input block w-full rounded-md border-gray-300 py-3 placeholder-gray-500 shadow-sm {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+							class="form-input block w-full rounded-md border-gray-300 py-2.5 md:py-3 placeholder-gray-500 shadow-sm text-sm md:text-base {userType === 'patologista' ? 'focus:border-primary-blue focus:ring-primary-blue' : 'focus:border-primary-green focus:ring-primary-green'} disabled:opacity-50 disabled:cursor-not-allowed"
 							placeholder="Senha"
 						/>
 					</div>
@@ -139,7 +139,7 @@ selectUserType('patologista');
 					</div>
 				{/if}
 
-				<div class="flex items-center justify-between">
+				<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
 					<div class="flex items-center">
 						<input
 							id="remember-me"
@@ -161,7 +161,7 @@ selectUserType('patologista');
 					<button
 						type="submit"
 						disabled={loading}
-						class="group relative flex w-full justify-center rounded-full border border-transparent px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {userType === 'patologista' ? 'bg-primary-blue hover:bg-blue-800 focus:ring-primary-blue' : 'bg-primary-green hover:bg-green-700 focus:ring-primary-green'} disabled:opacity-50 disabled:cursor-not-allowed"
+						class="group relative flex w-full justify-center rounded-full border border-transparent px-4 py-2.5 md:py-3 text-sm font-semibold text-white shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 {userType === 'patologista' ? 'bg-primary-blue hover:bg-blue-800 focus:ring-primary-blue' : 'bg-primary-green hover:bg-green-700 focus:ring-primary-green'} disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						{loading ? 'Entrando...' : 'Entrar'}
 					</button>
@@ -228,5 +228,65 @@ selectUserType('patologista');
 
 .text-gray-600 {
   color: #4b5563;
+}
+
+/* ========================================
+   RESPONSIVIDADE - MEDIA QUERIES
+   ======================================== */
+
+/* Mobile (< 768px) - Ajustes específicos */
+@media (max-width: 767px) {
+  .login-card {
+    margin: 1rem 0;
+  }
+  
+  /* Garante que inputs sejam legíveis sem zoom */
+  input[type="email"],
+  input[type="password"] {
+    font-size: 16px; /* Previne zoom no iOS */
+  }
+  
+  /* Ajusta espaçamento do formulário */
+  form {
+    margin-top: 1.5rem !important;
+  }
+}
+
+/* Tablet (768px - 1024px) - Ajustes intermediários */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .login-card {
+    max-width: 28rem;
+  }
+}
+
+/* Desktop (> 1024px) - Mantém estilos originais */
+@media (min-width: 1025px) {
+  .login-card {
+    max-width: 28rem;
+  }
+}
+
+/* Ajuste para telas muito pequenas (< 360px) */
+@media (max-width: 359px) {
+  .login-card {
+    border-radius: 0.75rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Ajuste para telas em landscape no mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+  .login-card {
+    margin: 0.5rem 0;
+  }
+  
+  /* Reduz padding em landscape */
+  .login-card > div:last-child {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
 }
 </style>

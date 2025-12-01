@@ -9,6 +9,7 @@ import {
   tipoExameService 
 } from '$lib/mocks/services';
 import LoadingSpinner from '$lib/components/LoadingSpinner.svelte';
+import ExamesTabs from '$lib/components/ExamesTabs.svelte';
 import {
   validarCPF,
   validarTelefone,
@@ -28,6 +29,13 @@ import FaClipboardCheck from 'svelte-icons/fa/FaClipboardCheck.svelte';
 import FaCheck from 'svelte-icons/fa/FaCheck.svelte';
 import FaExclamationTriangle from 'svelte-icons/fa/FaExclamationTriangle.svelte';
 import FaArrowLeft from 'svelte-icons/fa/FaArrowLeft.svelte';
+import FaBox from 'svelte-icons/fa/FaBox.svelte';
+import FaTint from 'svelte-icons/fa/FaTint.svelte';
+import FaFlask from 'svelte-icons/fa/FaFlask.svelte';
+import FaSearch from 'svelte-icons/fa/FaSearch.svelte';
+import FaBolt from 'svelte-icons/fa/FaBolt.svelte';
+import FaVial from 'svelte-icons/fa/FaVial.svelte';
+import FaBone from 'svelte-icons/fa/FaBone.svelte';
 
 let currentStep = $state(1);
 let loading = $state(false);
@@ -251,13 +259,52 @@ function toggleExame(exameId) {
   }
 }
 
+function handleToggleExame(novosSelecionados) {
+  examesSelecionados = novosSelecionados;
+}
+
+// Função helper para obter o ícone e nome da categoria
+function getCategoriaInfo(categoria) {
+  const categoriasMap = {
+    'COMBOS': { icon: FaBox, nome: 'Combos' },
+    'HEMATOLOGIA': { icon: FaTint, nome: 'Hematologia' },
+    'BIOQUIMICA': { icon: FaFlask, nome: 'Bioquímica' },
+    'DERMATOLOGIA': { icon: FaSearch, nome: 'Dermatologia' },
+    'TESTES_RAPIDOS': { icon: FaBolt, nome: 'Testes Rápidos' },
+    'URINA': { icon: FaVial, nome: 'Urina' },
+    'FEZES': { icon: FaFlask, nome: 'Fezes' },
+    'MEDULA_OSSEA': { icon: FaBone, nome: 'Medula Óssea' }
+  };
+  return categoriasMap[categoria] || { icon: FaMicroscope, nome: categoria };
+}
+
+// Expandir combos em exames individuais
+function expandirExames() {
+  const examesFinais = new Set();
+  
+  examesSelecionados.forEach(id => {
+    const exame = tiposExames.find(e => e.id === id);
+    if (exame && exame.isCombo && exame.examesIncluidos) {
+      // Se for combo, adiciona os exames incluídos
+      exame.examesIncluidos.forEach(exameId => examesFinais.add(exameId));
+    } else if (exame && !exame.isCombo) {
+      // Se for exame individual, adiciona diretamente
+      examesFinais.add(id);
+    }
+  });
+  
+  return Array.from(examesFinais);
+}
+
 async function enviarSolicitacao() {
   loading = true;
   try {
+    const examesExpandidos = expandirExames();
+    
     const novaSolicitacao = await solicitacaoService.criarSolicitacao({
       animal: { id: animalSelecionado },
       veterinarioSolicitante: { id: usuario.id },
-      exames: examesSelecionados.map(id => ({ id })),
+      exames: examesExpandidos.map(id => ({ id })),
       suspeitaClinica: suspeitaClinica
     });
     
@@ -292,8 +339,18 @@ onMount(() => {
       <h1>Nova Solicitação de Exame</h1>
     </div>
 
-    <!-- Indicador de Steps -->
-    <div class="steps-indicator">
+    <!-- Indicador de Steps - Mobile (Dots) -->
+    <div class="steps-mobile md:hidden">
+      <p class="step-text-mobile">Etapa {currentStep} de 5</p>
+      <div class="dots-container">
+        {#each [1, 2, 3, 4, 5] as step}
+          <div class="dot" class:active={currentStep === step} class:completed={currentStep > step}></div>
+        {/each}
+      </div>
+    </div>
+
+    <!-- Indicador de Steps - Desktop -->
+    <div class="steps-indicator hidden md:flex">
       <div class="step" class:active={currentStep >= 1} class:completed={currentStep > 1}>
         <div class="step-number">
           {#if currentStep > 1}
@@ -614,25 +671,12 @@ onMount(() => {
             <div class="erro-banner">{erros.exames}</div>
           {/if}
           
-          <div class="exames-grid">
-            {#each tiposExames as exame}
-              <button
-                type="button"
-                class="exame-card"
-                class:selected={examesSelecionados.includes(exame.id)}
-                onclick={() => toggleExame(exame.id)}
-              >
-                <div class="exame-check">
-                  {#if examesSelecionados.includes(exame.id)}
-                    <span class="check-icon"><FaCheck /></span>
-                  {/if}
-                </div>
-                <div class="exame-info">
-                  <strong>{exame.nome}</strong>
-                  <p>{exame.descricao}</p>
-                </div>
-              </button>
-            {/each}
+          <div class="exames-tabs-wrapper">
+            <ExamesTabs 
+              exames={tiposExames}
+              examesSelecionados={examesSelecionados}
+              onToggleExame={handleToggleExame}
+            />
           </div>
         </section>
       {/if}
@@ -690,13 +734,24 @@ onMount(() => {
 
           <div class="review-section">
             <h3>Exames Selecionados ({examesSelecionados.length})</h3>
-            <ul class="review-list">
-              {#each examesSelecionados as exameId}
-                {#if tiposExames.find(e => e.id === exameId)}
-                  <li>{tiposExames.find(e => e.id === exameId)?.nome}</li>
-                {/if}
-              {/each}
-            </ul>
+            {#each ['COMBOS', 'HEMATOLOGIA', 'BIOQUIMICA', 'DERMATOLOGIA', 'TESTES_RAPIDOS', 'URINA', 'FEZES', 'MEDULA_OSSEA'] as categoria}
+              {@const examesCategoria = tiposExames.filter(e => e.categoria === categoria && examesSelecionados.includes(e.id))}
+              {@const categoriaInfo = getCategoriaInfo(categoria)}
+              {@const IconComponent = categoriaInfo.icon}
+              {#if examesCategoria.length > 0}
+                <div class="review-category">
+                  <strong class="review-category-title">
+                    <span class="review-category-icon"><IconComponent /></span>
+                    <span>{categoriaInfo.nome}</span>
+                  </strong>
+                  <ul class="review-list">
+                    {#each examesCategoria as exame}
+                      <li>{exame.nome}</li>
+                    {/each}
+                  </ul>
+                </div>
+              {/if}
+            {/each}
           </div>
 
           <div class="review-section">
@@ -737,12 +792,22 @@ onMount(() => {
   padding: 0;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 
 .page-header {
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .page-header {
+    margin-bottom: 30px;
+  }
 }
 
 .voltar-btn {
@@ -770,40 +835,115 @@ onMount(() => {
 }
 
 h1 {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
   color: #1f2937;
 }
 
+@media (min-width: 768px) {
+  h1 {
+    font-size: 28px;
+  }
+}
+
 h2 {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   color: #1f2937;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  h2 {
+    font-size: 20px;
+    margin: 0 0 16px 0;
+    gap: 12px;
+  }
 }
 
 .section-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   color: #5DB578;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .section-icon {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 h3 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
   margin: 0 0 8px 0;
 }
 
-/* Steps Indicator */
-.steps-indicator {
+@media (min-width: 768px) {
+  h3 {
+    font-size: 16px;
+  }
+}
+
+/* ========================================
+   STEPS MOBILE (DOTS)
+   ======================================== */
+.steps-mobile {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+.step-text-mobile {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.dots-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d1d5db;
+  transition: all 0.3s;
+}
+
+.dot.active {
+  background: #5DB578;
+  width: 12px;
+  height: 12px;
+  box-shadow: 0 0 0 3px rgba(93, 181, 120, 0.2);
+}
+
+.dot.completed {
+  background: #10b981;
+}
+
+/* ========================================
+   STEPS INDICATOR (DESKTOP)
+   ======================================== */
+.steps-indicator {
   align-items: center;
   justify-content: center;
   margin-bottom: 40px;
@@ -877,16 +1017,47 @@ h3 {
 /* Form */
 .form-section {
   background: #f9fafb;
-  padding: 24px;
-  border-radius: 12px;
-  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
   border: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .form-section {
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
 }
 
 .section-description {
   color: #6b7280;
   margin: -8px 0 20px 0;
   font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.exames-tabs-wrapper {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+}
+
+@media (max-width: 767px) {
+  .section-description {
+    font-size: 13px;
+    margin: -6px 0 16px 0;
+    line-height: 1.4;
+  }
 }
 
 /* Toggle Buttons */
@@ -920,8 +1091,21 @@ h3 {
 /* Select Cards */
 .select-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .select-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .select-list {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  }
 }
 
 .select-card {
@@ -971,8 +1155,15 @@ h3 {
 /* Form Grid */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
 }
 
 .form-group {
@@ -1002,75 +1193,6 @@ select:focus {
   outline: none;
   border-color: #5DB578;
   box-shadow: 0 0 0 3px rgba(93, 181, 120, 0.1);
-}
-
-/* Exames Grid */
-.exames-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
-}
-
-.exame-card {
-  display: flex;
-  gap: 12px;
-  padding: 16px;
-  border: 2px solid #e5e7eb;
-  background: white;
-  border-radius: 8px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.exame-card:hover {
-  border-color: #5DB578;
-}
-
-.exame-card.selected {
-  border-color: #5DB578;
-  background: #F0FDF4;
-}
-
-.exame-check {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #d1d5db;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-
-.check-icon {
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  color: #5DB578;
-}
-
-.exame-card.selected .exame-check {
-  border-color: #5DB578;
-  background: #5DB578;
-}
-
-.exame-card.selected .check-icon {
-  color: white;
-}
-
-.exame-info strong {
-  display: block;
-  color: #1f2937;
-  margin-bottom: 4px;
-}
-
-.exame-info p {
-  margin: 0;
-  font-size: 13px;
-  color: #6b7280;
 }
 
 /* Textarea */
@@ -1107,18 +1229,56 @@ select:focus {
   color: #1f2937;
 }
 
+.review-category {
+  margin-bottom: 16px;
+}
+
+.review-category:last-child {
+  margin-bottom: 0;
+}
+
+.review-category-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.review-category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.review-category-icon :global(svg) {
+  width: 16px;
+  height: 16px;
+  color: #5DB578;
+}
+
 .review-list {
   list-style: none;
   padding: 0;
-  margin: 8px 0 0 0;
+  margin: 0;
 }
 
 .review-list li {
-  padding: 8px;
+  padding: 8px 12px;
   background: #f9fafb;
   border-radius: 4px;
   margin-bottom: 4px;
   color: #1f2937;
+  font-size: 14px;
+}
+
+.review-list li:last-child {
+  margin-bottom: 0;
 }
 
 .review-text {
@@ -1164,12 +1324,21 @@ select:focus {
 
 .cancel-btn,
 .submit-btn {
-  padding: 12px 32px;
+  padding: 12px 24px;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 44px;
+}
+
+@media (min-width: 768px) {
+  .cancel-btn,
+  .submit-btn {
+    padding: 12px 32px;
+    font-size: 15px;
+  }
 }
 
 .cancel-btn {

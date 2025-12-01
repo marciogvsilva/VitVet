@@ -39,12 +39,22 @@ let config = $derived(statusConfig[status] || statusConfig.RECEBIDO);
 <style>
 .status-badge {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
 }
 </style>
 

@@ -26,13 +26,23 @@ toastStore.subscribe(value => {
 <style>
 .toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 12px;
+  right: 12px;
+  left: 12px;
   z-index: 9999;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .toast-container {
+    top: 20px;
+    right: 20px;
+    left: auto;
+    gap: 12px;
+  }
 }
 
 .toast-container :global(.toast) {

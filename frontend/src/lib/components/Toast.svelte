@@ -51,26 +51,45 @@ function fechar() {
 <style>
 .toast {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  min-width: 300px;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  min-width: auto;
   max-width: 500px;
-  padding: 16px;
+  padding: 12px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   z-index: 9999;
   opacity: 0;
-  transform: translateX(400px);
+  transform: translateY(-100px);
   transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .toast {
+    top: 20px;
+    right: 20px;
+    left: auto;
+    min-width: 300px;
+    padding: 16px;
+    gap: 12px;
+    transform: translateX(400px);
+  }
 }
 
 .toast.visible {
   opacity: 1;
-  transform: translateX(0);
+  transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+  .toast.visible {
+    transform: translateX(0);
+  }
 }
 
 .toast.success {
@@ -86,11 +105,18 @@ function fechar() {
 }
 
 .toast-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .toast-icon {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .toast.success .toast-icon {
@@ -108,9 +134,16 @@ function fechar() {
 .toast-message {
   flex: 1;
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   color: #1f2937;
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+@media (min-width: 768px) {
+  .toast-message {
+    font-size: 14px;
+    line-height: 1.5;
+  }
 }
 
 .toast-close {

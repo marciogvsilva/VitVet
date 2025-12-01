@@ -9,6 +9,8 @@ import FaClock from 'svelte-icons/fa/FaClock.svelte';
 import FaCheckCircle from 'svelte-icons/fa/FaCheckCircle.svelte';
 import FaMicroscope from 'svelte-icons/fa/FaMicroscope.svelte';
 import FaExclamationCircle from 'svelte-icons/fa/FaExclamationCircle.svelte';
+import FaFilter from 'svelte-icons/fa/FaFilter.svelte';
+import FaTimes from 'svelte-icons/fa/FaTimes.svelte';
 
 let solicitacoes = $state([]);
 let loading = $state(true);
@@ -17,6 +19,7 @@ let erro = $state('');
 // Filtros
 let filtroStatus = $state('');
 let busca = $state('');
+let drawerAberto = $state(false);
 
 async function carregarSolicitacoes() {
   loading = true;
@@ -50,19 +53,22 @@ function limparFiltros() {
   filtroStatus = '';
   busca = '';
   carregarSolicitacoes();
-}
-
-// Atalho para ver apenas as novas (recebidas)
-function verNovas() {
-  filtroStatus = 'RECEBIDO';
-  busca = '';
-  carregarSolicitacoes();
+  drawerAberto = false;
 }
 
 function aplicarFiltroRapido(status) {
   filtroStatus = status;
   busca = '';
   carregarSolicitacoes();
+}
+
+function aplicarFiltrosDrawer() {
+  carregarSolicitacoes();
+  drawerAberto = false;
+}
+
+function toggleDrawer() {
+  drawerAberto = !drawerAberto;
 }
 
 onMount(() => {
@@ -84,7 +90,8 @@ onMount(() => {
       class:ativo={filtroStatus === 'RECEBIDO'}
     >
       <span class="atalho-icon"><FaInbox /></span>
-      Ver Novas Solicitações
+      <span class="atalho-label">Novas</span>
+      <span class="atalho-label-full">Ver Novas Solicitações</span>
     </button>
     <button 
       onclick={() => aplicarFiltroRapido('EM_ANALISE')} 
@@ -92,7 +99,8 @@ onMount(() => {
       class:ativo={filtroStatus === 'EM_ANALISE'}
     >
       <span class="atalho-icon"><FaClock /></span>
-      Em Análise
+      <span class="atalho-label">Em Análise</span>
+      <span class="atalho-label-full">Em Análise</span>
     </button>
     <button 
       onclick={() => aplicarFiltroRapido('CONCLUIDO')} 
@@ -100,12 +108,22 @@ onMount(() => {
       class:ativo={filtroStatus === 'CONCLUIDO'}
     >
       <span class="atalho-icon"><FaCheckCircle /></span>
-      Concluídos
+      <span class="atalho-label">Concluídos</span>
+      <span class="atalho-label-full">Concluídos</span>
     </button>
   </div>
 
-  <!-- Filtros -->
-  <div class="filtros">
+  <!-- Botão Filtros (Mobile) -->
+  <button class="btn-filtros-mobile md:hidden" onclick={toggleDrawer}>
+    <span class="filter-icon"><FaFilter /></span>
+    Filtros
+    {#if filtroStatus || busca}
+      <span class="filtro-badge">•</span>
+    {/if}
+  </button>
+
+  <!-- Filtros (Desktop/Tablet) -->
+  <div class="filtros hidden md:flex">
     <div class="filtro-grupo">
       <label for="status">Status:</label>
       <select 
@@ -192,54 +210,170 @@ onMount(() => {
   </div>
 </div>
 
+<!-- Drawer de Filtros (Mobile) -->
+{#if drawerAberto}
+  <div class="drawer-overlay" onclick={toggleDrawer}></div>
+  <div class="drawer-filtros">
+    <div class="drawer-header">
+      <h3>Filtros</h3>
+      <button class="drawer-close" onclick={toggleDrawer} aria-label="Fechar">
+        <FaTimes />
+      </button>
+    </div>
+
+    <div class="drawer-content">
+      <div class="filtro-grupo">
+        <label for="status-drawer">Status:</label>
+        <select 
+          id="status-drawer" 
+          bind:value={filtroStatus}
+          class="select-input"
+        >
+          <option value="">Todos os status</option>
+          <option value="RECEBIDO">Recebido</option>
+          <option value="EM_ANALISE">Em Análise</option>
+          <option value="CONCLUIDO">Concluído</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label for="busca-drawer">Buscar animal:</label>
+        <input
+          id="busca-drawer"
+          type="text"
+          bind:value={busca}
+          placeholder="Nome do animal..."
+          class="text-input"
+        />
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button onclick={limparFiltros} class="btn-limpar">
+        Limpar
+      </button>
+      <button onclick={aplicarFiltrosDrawer} class="btn-buscar">
+        Aplicar Filtros
+      </button>
+    </div>
+  </div>
+{/if}
+
 <style>
 .solicitacoes-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   height: 100%;
 }
 
+@media (min-width: 768px) {
+  .solicitacoes-page {
+    gap: 24px;
+  }
+}
+
 .page-header h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
+}
+
+@media (min-width: 768px) {
+  .page-header h1 {
+    font-size: 28px;
+    margin: 0 0 8px 0;
+  }
 }
 
 .subtitle {
   color: #6b7280;
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .subtitle {
+    font-size: 14px;
+  }
 }
 
 /* Atalhos */
 .atalhos {
   display: flex;
-  gap: 12px;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .atalhos {
+    gap: 12px;
+  }
 }
 
 .atalho-btn {
   flex: 1;
-  padding: 16px;
+  padding: 10px 8px;
   border: 2px solid;
-  border-radius: 12px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   background: white;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
+  min-height: 60px;
+}
+
+@media (min-width: 768px) {
+  .atalho-btn {
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    flex-direction: row;
+    gap: 8px;
+    min-height: auto;
+  }
 }
 
 .atalho-icon {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .atalho-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.atalho-label {
+  display: block;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.atalho-label-full {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .atalho-label {
+    display: none;
+  }
+  
+  .atalho-label-full {
+    display: block;
+  }
 }
 
 .atalho-btn.recebido {
@@ -289,13 +423,20 @@ onMount(() => {
 
 /* Filtros */
 .filtros {
-  display: flex;
+  display: none; /* Oculto por padrão no mobile */
   gap: 16px;
   align-items: flex-end;
   padding: 20px;
   background: #f9fafb;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+}
+
+/* Desktop: mostrar filtros */
+@media (min-width: 768px) {
+  .filtros {
+    display: flex !important; /* Garantir que aparece no desktop */
+  }
 }
 
 .filtro-grupo {
@@ -374,10 +515,65 @@ onMount(() => {
   font-weight: 500;
 }
 
+/* Botão Filtros Mobile */
+.btn-filtros-mobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #1D6088;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+/* Ocultar botão no desktop */
+@media (min-width: 768px) {
+  .btn-filtros-mobile {
+    display: none !important;
+  }
+}
+
+.btn-filtros-mobile:hover {
+  background: #165070;
+}
+
+.filter-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-badge {
+  color: #DBEAFE;
+  font-size: 20px;
+  line-height: 1;
+}
+
 .solicitacoes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .solicitacoes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .solicitacoes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
 }
 
 /* Empty State */
@@ -454,5 +650,142 @@ onMount(() => {
   background: #dc2626;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* ========================================
+   DRAWER DE FILTROS (MOBILE)
+   ======================================== */
+.drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.drawer-filtros {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 400px;
+  background: white;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.drawer-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.drawer-close:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
+.drawer-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start; /* Alinhar no topo, sem distribuição de espaço */
+  gap: 0; /* Sem gap entre grupos, eles ficam acumulados */
+}
+
+/* Grupos de filtros dentro do drawer com espaçamento adequado */
+.drawer-content .filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px; /* Espaçamento entre filtros */
+  flex: none !important; /* Sobrescrever flex: 1 do estilo global */
+  flex-shrink: 0; /* Não encolher */
+}
+
+.drawer-content .filtro-grupo:last-child {
+  margin-bottom: 0; /* Último grupo sem margem inferior */
+}
+
+.drawer-content .filtro-grupo label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0; /* Remover margem extra do label */
+}
+
+.drawer-content .select-input,
+.drawer-content .text-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.drawer-content .select-input:focus,
+.drawer-content .text-input:focus {
+  outline: none;
+  border-color: #1D6088;
+  box-shadow: 0 0 0 3px rgba(29, 96, 136, 0.1);
+}
+
+.drawer-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 12px;
+}
+
+.drawer-footer .btn-limpar,
+.drawer-footer .btn-buscar {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
 }
 </style>

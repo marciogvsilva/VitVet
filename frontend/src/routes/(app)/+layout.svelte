@@ -11,7 +11,6 @@ import FaHome from 'svelte-icons/fa/FaHome.svelte';
 import FaClipboardList from 'svelte-icons/fa/FaClipboardList.svelte';
 import FaPlus from 'svelte-icons/fa/FaPlus.svelte';
 import FaCog from 'svelte-icons/fa/FaCog.svelte';
-import FaMicroscope from 'svelte-icons/fa/FaMicroscope.svelte';
 import FaSignOutAlt from 'svelte-icons/fa/FaSignOutAlt.svelte';
 
 // Props para renderizar conteúdo filho
@@ -78,19 +77,12 @@ async function handleLogout() {
 }
 </script>
 
-<div class="app-layout">
-  <!-- Menu lateral -->
-  <aside class="sidebar" style="--primary-color: {primaryColor}; --secondary-color: {secondaryColor}; --dark-primary-color: {darkPrimaryColor};">
+<div class="app-layout" style="--primary-color: {primaryColor}; --secondary-color: {secondaryColor}; --dark-primary-color: {darkPrimaryColor};">
+  <!-- Menu lateral - Desktop only -->
+  <aside class="sidebar hidden md:flex">
     <!-- Logo do site -->
     <div class="logo-container">
-      <div class="logo" style="color: {darkPrimaryColor};">
-        <span class="logo-icon">
-          <div class="icon-wrapper">
-            <FaMicroscope />
-          </div>
-        </span>
-        <span class="logo-text">VitVet</span>
-      </div>
+      <img src="/images/vivet-logo.png" alt="VitVet - Clínica Veterinária" class="logo-image" />
     </div>
     
     <!-- Menu de navegação -->
@@ -143,7 +135,9 @@ async function handleLogout() {
         <div class="user-info">
           <span class="user-name">{userName}</span>
         </div>
-        <h1 class="header-title">Exames - VitVet</h1>
+        <div class="header-logo-container">
+          <img src="/images/vivet-logo.png" alt="VitVet" class="header-logo" />
+        </div>
         <div class="header-actions">
           <button class="icon-button" aria-label="Configurações">
             <span class="icon">
@@ -152,7 +146,7 @@ async function handleLogout() {
               </div>
             </span>
           </button>
-          <button class="icon-button" aria-label="Sair" on:click={handleLogout}>
+          <button class="icon-button" aria-label="Sair" onclick={handleLogout}>
             <span class="icon">
               <div class="icon-wrapper">
                 <FaSignOutAlt />
@@ -179,6 +173,47 @@ async function handleLogout() {
       </div>
     </main>
   </div>
+
+  <!-- Bottom Navigation - Mobile only -->
+  <nav class="bottom-nav md:hidden">
+    <a href="/{userType}/home" class="bottom-nav-item" class:active={isHomePage}>
+      <div class="bottom-nav-icon">
+        <div class="icon-wrapper">
+          <FaHome />
+        </div>
+      </div>
+      <span class="bottom-nav-label">Home</span>
+    </a>
+
+    <a href="/{userType}/solicitacoes" class="bottom-nav-item" class:active={isSolicitacoesPage}>
+      <div class="bottom-nav-icon">
+        <div class="icon-wrapper">
+          <FaClipboardList />
+        </div>
+      </div>
+      <span class="bottom-nav-label">Solicitações</span>
+    </a>
+
+    {#if userType === 'veterinario'}
+      <a href="/{userType}/nova-solicitacao" class="bottom-nav-item" class:active={isNovaSolicitacaoPage}>
+        <div class="bottom-nav-icon">
+          <div class="icon-wrapper">
+            <FaPlus />
+          </div>
+        </div>
+        <span class="bottom-nav-label">Nova</span>
+      </a>
+    {:else}
+      <button class="bottom-nav-item" aria-label="Configurações">
+        <div class="bottom-nav-icon">
+          <div class="icon-wrapper">
+            <FaCog />
+          </div>
+        </div>
+        <span class="bottom-nav-label">Config</span>
+      </button>
+    {/if}
+  </nav>
 </div>
 
 <!-- Container de notificações Toast -->
@@ -202,15 +237,23 @@ async function handleLogout() {
   display: flex;
   min-height: 100vh;
   background-color: var(--secondary-color);
+  position: relative;
 }
 
-/* Menu lateral */
+/* Menu lateral - Desktop */
 .sidebar {
+  display: none; /* Oculto no mobile por padrão */
   width: 250px;
   background-color: var(--secondary-color);
-  display: flex;
   flex-direction: column;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Mostrar sidebar apenas no desktop */
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex !important; /* Garantir que aparece no desktop */
+  }
 }
 
 .logo-container {
@@ -219,19 +262,11 @@ async function handleLogout() {
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 24px;
-}
-
-.logo-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
+.logo-image {
+  width: 100%;
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
 }
 
 .icon-wrapper {
@@ -240,15 +275,6 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.logo-icon .icon-wrapper {
-  width: 28px;
-  height: 28px;
-}
-
-.logo-text {
-  letter-spacing: -0.5px;
 }
 
 .nav-menu {
@@ -308,52 +334,140 @@ async function handleLogout() {
 }
 
 .content-header {
-  padding: 12px 24px;
+  padding: 12px 16px;
   background-color: white;
+}
+
+@media (min-width: 768px) {
+  .content-header {
+    padding: 12px 24px;
+  }
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  position: relative; /* Para posicionar elementos absolutos */
 }
 
 .user-info {
-  min-width: 200px;
+  display: none; /* Oculto no mobile */
+  min-width: 60px;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .user-info {
+    display: block; /* Mostrar no desktop */
+    min-width: 200px;
+  }
 }
 
 .user-name {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 500;
   color: #444;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.header-title {
-  font-size: 24px;
-  font-weight: 500;
-  color: #333;
-  margin: 0;
-  text-align: center;
+@media (min-width: 768px) {
+  .user-name {
+    font-size: 16px;
+  }
+}
+
+.header-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.header-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Mobile: logo centralizada, ações à direita */
+@media (max-width: 767px) {
+  .header-content {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .header-logo-container {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .header-logo {
+    height: 32px;
+  }
+  
+  .header-actions {
+    position: absolute;
+    right: 16px;
+    flex: 0 0 auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .header-logo-container {
+    justify-content: center;
+  }
+  
+  .header-logo {
+    height: 48px;
+  }
+  
+  .header-content {
+    justify-content: space-between;
+  }
+  
+  .header-actions {
+    position: static;
+  }
 }
 
 .header-actions {
   display: flex;
-  gap: 12px;
-  min-width: 200px;
+  gap: 8px;
+  min-width: 60px;
   justify-content: flex-end;
+}
+
+@media (min-width: 768px) {
+  .header-actions {
+    gap: 12px;
+    min-width: 200px;
+  }
 }
 
 .icon-button {
   background: none;
   border: none;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+
+@media (min-width: 768px) {
+  .icon-button {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 .icon-button:hover {
@@ -364,12 +478,25 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
+}
+
+@media (min-width: 768px) {
+  .icon-button .icon {
+    font-size: 18px;
+  }
 }
 
 .icon-button .icon .icon-wrapper {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 768px) {
+  .icon-button .icon .icon-wrapper {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .content-divider {
@@ -380,18 +507,42 @@ async function handleLogout() {
 
 .content-main {
   flex: 1;
-  padding: 20px;
+  padding: 12px;
+  padding-bottom: 80px; /* Espaço para bottom nav no mobile */
   background-color: var(--color-background-light);
   overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .content-main {
+    padding: 20px;
+    padding-bottom: 20px; /* Remove padding extra no desktop */
+  }
 }
 
 .content-container {
   background-color: white;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 16px;
   height: 100%;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    border-radius: 16px;
+    padding: 24px;
+  }
 }
 
 .flex {
@@ -412,5 +563,89 @@ async function handleLogout() {
 
 .text-gray-600 {
   color: #4b5563;
+}
+
+/* ========================================
+   BOTTOM NAVIGATION - MOBILE ONLY
+   ======================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background-color: var(--secondary-color);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+  padding: 0 8px;
+}
+
+/* Ocultar bottom-nav no desktop */
+@media (min-width: 768px) {
+  .bottom-nav {
+    display: none !important; /* Garantir que fica oculto no desktop */
+  }
+}
+
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 4px;
+  text-decoration: none;
+  color: #666;
+  transition: all 0.2s;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  min-height: 44px; /* Touch target adequado */
+}
+
+.bottom-nav-item:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.bottom-nav-item.active {
+  color: var(--primary-color);
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+  background-color: rgba(var(--primary-color-rgb, 93, 181, 120), 0.1);
+}
+
+.bottom-nav-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.bottom-nav-icon .icon-wrapper {
+  width: 20px;
+  height: 20px;
+}
+
+.bottom-nav-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Ajustar cores RGB para efeito de active no bottom nav */
+@media (max-width: 767px) {
+  .app-layout {
+    --primary-color-rgb: 93, 181, 120; /* green default */
+  }
 }
 </style>

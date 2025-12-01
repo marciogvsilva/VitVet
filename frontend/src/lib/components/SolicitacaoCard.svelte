@@ -66,13 +66,20 @@ let examesTexto = $derived(
 .solicitacao-card {
   background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 10px;
+  padding: 14px;
   transition: all 0.2s ease;
   cursor: pointer;
   text-align: left;
   width: 100%;
   display: block;
+}
+
+@media (min-width: 768px) {
+  .solicitacao-card {
+    border-radius: 12px;
+    padding: 20px;
+  }
 }
 
 .solicitacao-card:hover {
@@ -85,47 +92,91 @@ let examesTexto = $derived(
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #f3f4f6;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .card-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
 }
 
 .protocolo {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #1f2937;
   margin: 0 0 4px 0;
 }
 
+@media (min-width: 768px) {
+  .protocolo {
+    font-size: 18px;
+  }
+}
+
 .animal {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   margin: 0;
   font-weight: 500;
 }
 
+@media (min-width: 768px) {
+  .animal {
+    font-size: 14px;
+  }
+}
+
 .card-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (min-width: 768px) {
+  .card-body {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
 }
 
 .info-row {
   display: flex;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .info-row {
+    gap: 8px;
+    font-size: 14px;
+    flex-wrap: nowrap;
+  }
 }
 
 .label {
   color: #6b7280;
   font-weight: 600;
-  min-width: 80px;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .label {
+    min-width: 80px;
+  }
 }
 
 .value {
   color: #1f2937;
   flex: 1;
+  word-break: break-word;
 }
 
 .value.exames {
@@ -134,17 +185,29 @@ let examesTexto = $derived(
 }
 
 .card-footer {
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 768px) {
+  .card-footer {
+    padding-top: 12px;
+  }
 }
 
 .ver-detalhes {
   color: #5DB578;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+@media (min-width: 768px) {
+  .ver-detalhes {
+    font-size: 14px;
+  }
 }
 
 .solicitacao-card:hover .ver-detalhes {

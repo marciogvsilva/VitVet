@@ -59,6 +59,24 @@ services:
       retries: 5
       start_period: 60s
 
+  # Frontend SvelteKit
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vitvet-frontend
+    restart: unless-stopped
+    environment:
+      # Usar mocks por enquanto (backend ainda não está pronto)
+      VITE_USE_MOCK: "true"
+      # URL da API (quando backend estiver pronto)
+      VITE_API_BASE_URL: http://backend:8080
+    ports:
+      - "5173:5173"
+    networks:
+      - vitvet-network
+    # Frontend não depende do backend por enquanto (usando mocks)
+
 volumes:
   postgres_data:
     driver: local
