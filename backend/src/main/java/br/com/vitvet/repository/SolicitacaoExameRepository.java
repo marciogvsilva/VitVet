@@ -15,4 +15,6 @@ public interface SolicitacaoExameRepository extends JpaRepository<SolicitacaoExa
     List<SolicitacaoExame> findByAnimalNomeContainingIgnoreCase(String nomeAnimal);
 
     List<SolicitacaoExame> findByStatusAndAnimalNomeContainingIgnoreCase(StatusSolicitacao status, String nomeAnimal);
+
+    List<SolicitacaoExame> findByAnimalTutorNomeCompletoContainingIgnoreCaseAndAnimalNomeContainingIgnoreCase(String nomeTutor, String nomeAnimal);
 }

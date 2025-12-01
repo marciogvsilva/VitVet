@@ -33,7 +33,6 @@ public class TutorService {
         tutorExistente.setNomeCompleto(dadosAtualizados.getNomeCompleto());
         tutorExistente.setEmail(dadosAtualizados.getEmail());
         tutorExistente.setTelefone(dadosAtualizados.getTelefone());
-        // CPF geralmente não se altera, mas poderia ser incluído
 
         return tutorRepository.save(tutorExistente);
     }

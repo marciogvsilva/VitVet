@@ -8,6 +8,6 @@ public enum Papel implements GrantedAuthority {
 
     @Override
     public String getAuthority() {
-        return this.name(); // Retorna o nome do enum como a "authority"
+        return this.name();
     }
 }
