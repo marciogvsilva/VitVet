@@ -84,4 +84,3 @@ volumes:
 networks:
   vitvet-network:
     driver: bridge
-
