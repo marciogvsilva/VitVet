@@ -744,11 +744,11 @@ onMount(() => {
                     <span class="review-category-icon"><IconComponent /></span>
                     <span>{categoriaInfo.nome}</span>
                   </strong>
-                  <ul class="review-list">
+            <ul class="review-list">
                     {#each examesCategoria as exame}
                       <li>{exame.nome}</li>
-                    {/each}
-                  </ul>
+              {/each}
+            </ul>
                 </div>
               {/if}
             {/each}
@@ -806,7 +806,7 @@ onMount(() => {
 
 @media (min-width: 768px) {
   .page-header {
-    margin-bottom: 30px;
+  margin-bottom: 30px;
   }
 }
 
@@ -861,7 +861,7 @@ h2 {
   h2 {
     font-size: 20px;
     margin: 0 0 16px 0;
-    gap: 12px;
+  gap: 12px;
   }
 }
 
@@ -1030,9 +1030,9 @@ h3 {
 
 @media (min-width: 768px) {
   .form-section {
-    padding: 24px;
-    border-radius: 12px;
-    margin-bottom: 24px;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
   }
 }
 
@@ -1098,7 +1098,7 @@ h3 {
 @media (min-width: 768px) {
   .select-list {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+  gap: 12px;
   }
 }
 
@@ -1161,8 +1161,8 @@ h3 {
 
 @media (min-width: 768px) {
   .form-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   }
 }
 

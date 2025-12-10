@@ -77,8 +77,9 @@ async function handleLogin(event) {
 selectUserType('patologista');
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-background-light font-sans px-4 md:px-6 lg:px-0">
-	<div class="w-full max-w-[calc(100%-2rem)] md:max-w-md space-y-0 rounded-xl bg-white shadow-lg login-card">
+<div class="flex min-h-screen flex-col bg-background-light font-sans">
+	<div class="flex-1 flex items-center justify-center px-4 md:px-6 lg:px-0">
+		<div class="w-full max-w-[calc(100%-2rem)] md:max-w-md space-y-0 rounded-xl bg-white shadow-lg login-card">
 		<!-- Seletor de tipo de usuário -->
 		<div class="flex w-full overflow-hidden rounded-t-xl">
 			<button 
@@ -169,6 +170,37 @@ selectUserType('patologista');
 			</form>
 		</div>
 	</div>
+	</div>
+	
+	<!-- Footer com informações do projeto -->
+	<footer class="login-footer">
+		<div class="footer-content">
+			<!-- Seção 1: Nomes da equipe -->
+			<div class="footer-section team-names">
+				<span>Amália Melo</span>
+				<span class="separator">·</span>
+				<span>Lorena Salvador</span>
+				<span class="separator">·</span>
+				<span>Jade Bortot de Paiva</span>
+				<span class="separator">·</span>
+				<span>Ketlen Victória Souza</span>
+				<span class="separator">·</span>
+				<span>Márcio G. V. Silva</span>
+				<span class="separator">·</span>
+				<span>Otávio Augusto Colucci de Oliveira</span>
+			</div>
+			
+			<!-- Seção 2: Disciplina -->
+			<div class="footer-section course-info">
+				<p>SSC0536 - Projeto e Desenvolvimento de Sistemas de Informação</p>
+			</div>
+			
+			<!-- Seção 3: Professora e instituição -->
+			<div class="footer-section institution-info">
+				<p>Profª Simone Senger Souza | São Carlos - ICMC - USP | 2025</p>
+			</div>
+		</div>
+	</footer>
 </div>
 
 <!-- Container de notificações Toast -->
@@ -287,6 +319,88 @@ selectUserType('patologista');
   .login-card > div:last-child {
     padding-top: 1rem !important;
     padding-bottom: 1rem !important;
+  }
+}
+
+/* ========================================
+   ESTILOS DO FOOTER
+   ======================================== */
+
+.login-footer {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  padding: 1.5rem 1rem;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.footer-section {
+  margin-bottom: 1rem;
+}
+
+.footer-section:last-child {
+  margin-bottom: 0;
+}
+
+.footer-section p {
+  margin: 0;
+}
+
+.team-names {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.separator {
+  color: #cbd5e0;
+}
+
+/* Mobile: nomes em coluna */
+@media (max-width: 767px) {
+  .team-names {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .separator {
+    display: none;
+  }
+}
+
+/* Tablet/Desktop: nomes em linha com quebra */
+@media (min-width: 768px) {
+  .login-footer {
+    padding: 2rem;
+  }
+  
+  .footer-content {
+    font-size: 0.9rem;
+  }
+  
+  .team-names span:not(.separator) {
+    white-space: nowrap;
+  }
+}
+
+/* Landscape mobile: footer menor */
+@media (max-height: 600px) and (orientation: landscape) {
+  .login-footer {
+    padding: 1rem;
+    font-size: 0.75rem;
+  }
+  
+  .footer-section {
+    margin-bottom: 0.5rem;
   }
 }
 </style>

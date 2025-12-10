@@ -362,7 +362,7 @@ async function handleLogout() {
 @media (min-width: 768px) {
   .user-info {
     display: block; /* Mostrar no desktop */
-    min-width: 200px;
+  min-width: 200px;
   }
 }
 
@@ -483,8 +483,8 @@ async function handleLogout() {
 
 @media (min-width: 768px) {
   .icon-button .icon {
-    font-size: 18px;
-  }
+  font-size: 18px;
+}
 }
 
 .icon-button .icon .icon-wrapper {
@@ -493,9 +493,9 @@ async function handleLogout() {
 }
 
 @media (min-width: 768px) {
-  .icon-button .icon .icon-wrapper {
-    width: 20px;
-    height: 20px;
+.icon-button .icon .icon-wrapper {
+  width: 20px;
+  height: 20px;
   }
 }
 
